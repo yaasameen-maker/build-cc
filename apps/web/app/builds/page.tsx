@@ -1,16 +1,21 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import sql from '@/lib/db'
 import BuildsClient from './BuildsClient'
+import type { Build } from '@/lib/types'
 
 export default async function BuildsPage() {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/signin')
+  const session = await auth()
+  if (!session?.user?.id) redirect('/auth/signin')
 
-  const { data: builds } = await supabase
-    .from('builds')
-    .select('*')
-    .order('updated_at', { ascending: false })
+  const builds = await sql`
+    SELECT * FROM builds WHERE user_id = ${session.user.id} ORDER BY updated_at DESC
+  ` as unknown as Build[]
 
-  return <BuildsClient initialBuilds={builds ?? []} user={user} />
+  return (
+    <BuildsClient
+      initialBuilds={builds}
+      user={{ id: session.user.id, name: session.user.name ?? '', image: session.user.image ?? '' }}
+    />
+  )
 }

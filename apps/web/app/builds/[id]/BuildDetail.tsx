@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase'
 import type { Build, DeployConfig, SyncResponse } from '@/lib/types'
 import { getItemState, EMPTY_DEP } from '@/lib/types'
 import { FE_SECTIONS, BE_SECTIONS, ALL_SECTIONS } from '@/lib/sections'
@@ -32,8 +30,14 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       : 'Not scanned — click sync + scan to auto-detect checklist items'
   )
   const [syncProgress, setSyncProgress] = useState(0)
-  const router = useRouter()
-  const supabase = createClient()
+
+  async function patch(data: object) {
+    await fetch(`/api/builds/${build.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+  }
 
   // ── Sync ──────────────────────────────────────────────────────────────────
   async function fullSync() {
@@ -46,7 +50,11 @@ export default function BuildDetail({ build: initialBuild }: Props) {
     try {
       setSyncProgress(40)
       setSyncMsg('Scanning file tree…')
-      const res = await fetch(`/api/sync/${owner}/${repo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+      const res = await fetch(`/api/sync/${owner}/${repo}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
 
       setSyncProgress(80)
       setSyncMsg('Extracting signals…')
@@ -63,7 +71,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       const lastScan = new Date().toISOString()
       const updated = { ...build, signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }
       setBuild(updated)
-      await supabase.from('builds').update({ signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }).eq('id', build.id)
+      await patch({ signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan })
 
       setTimeout(() => setSyncState('idle'), 4000)
     } catch {
@@ -79,14 +87,22 @@ export default function BuildDetail({ build: initialBuild }: Props) {
     const key = `${secId}:${itemId}`
     const next = { ...build, checks: { ...build.checks, [key]: !build.checks?.[key] } }
     setBuild(next)
-    await supabase.from('builds').update({ checks: next.checks }).eq('id', build.id)
-  }, [build, supabase])
+    await fetch(`/api/builds/${build.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checks: next.checks }),
+    })
+  }, [build])
 
   // ── Deployment save ───────────────────────────────────────────────────────
   const saveDep = useCallback(async (dep: DeployConfig) => {
     setBuild(b => ({ ...b, dep }))
-    await supabase.from('builds').update({ dep }).eq('id', build.id)
-  }, [build.id, supabase])
+    await fetch(`/api/builds/${build.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dep }),
+    })
+  }, [build.id])
 
   // ── Progress ──────────────────────────────────────────────────────────────
   const sections = clView === 'fe' ? FE_SECTIONS : BE_SECTIONS

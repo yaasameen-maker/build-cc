@@ -1,15 +1,19 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { auth } from '@/lib/auth'
 import { notFound, redirect } from 'next/navigation'
+import sql from '@/lib/db'
 import BuildDetail from './BuildDetail'
+import type { Build } from '@/lib/types'
 
 export default async function BuildPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/signin')
+  const session = await auth()
+  if (!session?.user?.id) redirect('/auth/signin')
 
-  const { data: build } = await supabase.from('builds').select('*').eq('id', id).single()
+  const [build] = await sql`
+    SELECT * FROM builds WHERE id = ${id} AND user_id = ${session.user.id}
+  ` as unknown as Build[]
+
   if (!build) notFound()
 
-  return <BuildDetail build={build as never} />
+  return <BuildDetail build={build} />
 }

@@ -2,14 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase'
 import type { Build } from '@/lib/types'
-import type { User } from '@supabase/supabase-js'
-import { EMPTY_DEP } from '@/lib/types'
 
 interface Props {
   initialBuilds: Build[]
-  user: User
+  user: { id: string; name: string; image: string }
 }
 
 export default function BuildsClient({ initialBuilds, user }: Props) {
@@ -17,48 +14,38 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
   const [showNew, setShowNew] = useState(false)
   const [name, setName] = useState('')
   const [repo, setRepo] = useState('')
-  const supabase = createClient()
+  const [loading, setLoading] = useState(false)
 
   async function createBuild() {
-    if (!name.trim()) return
-    const { data, error } = await supabase
-      .from('builds')
-      .insert({
-        user_id: user.id,
-        name: name.trim(),
-        repo: repo.trim() || null,
-        checks: {},
-        auto_checks: {},
-        custom_items: {},
-        docs: [],
-        section_open: {},
-        gh_data: { commits: [], prs: [], issues: [] },
-        signals: {},
-        dep: EMPTY_DEP,
-        last_scan: null,
-      })
-      .select()
-      .single()
-
-    if (data && !error) {
-      setBuilds([data as Build, ...builds])
+    if (!name.trim() || loading) return
+    setLoading(true)
+    const res = await fetch('/api/builds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name.trim(), repo: repo.trim() }),
+    })
+    if (res.ok) {
+      const build = await res.json()
+      setBuilds([build, ...builds])
       setName('')
       setRepo('')
       setShowNew(false)
     }
+    setLoading(false)
   }
 
   async function deleteBuild(id: string) {
     if (!confirm('Remove this build?')) return
-    await supabase.from('builds').delete().eq('id', id)
+    await fetch(`/api/builds/${id}`, { method: 'DELETE' })
     setBuilds(builds.filter(b => b.id !== id))
   }
 
   function progress(build: Build) {
-    let done = 0, total = 0
-    Object.keys(build.checks ?? {}).forEach(k => { total++; if (build.checks[k]) done++ })
-    Object.keys(build.auto_checks ?? {}).filter(k => k.startsWith('auto:')).forEach(() => { total++; done++ })
-    return total ? Math.round(done / total * 100) : 0
+    const manual = Object.values(build.checks ?? {}).filter(Boolean).length
+    const auto = Object.keys(build.auto_checks ?? {}).filter(k => k.startsWith('auto:')).length
+    const total = Object.keys(build.checks ?? {}).length +
+      Object.keys(build.auto_checks ?? {}).filter(k => k.startsWith('auto:')).length
+    return total ? Math.round((manual + auto) / total * 100) : 0
   }
 
   return (
@@ -67,21 +54,22 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
         <span className="font-bold text-base tracking-tight">
           build<span className="text-emerald-400">.</span>cc
         </span>
-        <span className="text-gray-600 text-sm ml-auto font-mono">{user.user_metadata?.user_name}</span>
-        <button
-          onClick={async () => { await createClient().auth.signOut(); location.href = '/auth/signin' }}
-          className="text-gray-500 hover:text-gray-300 text-xs font-mono transition-colors"
-        >
-          sign out
-        </button>
+        {user.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full ml-auto" />
+        )}
+        <span className="text-gray-500 text-xs font-mono">{user.name}</span>
+        <form action="/api/auth/signout" method="POST">
+          <button className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors">sign out</button>
+        </form>
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-sm font-mono text-gray-400 uppercase tracking-widest">builds</h1>
+          <h1 className="text-xs font-mono text-gray-500 uppercase tracking-widest">builds</h1>
           <button
             onClick={() => setShowNew(true)}
-            className="text-xs font-mono px-3 py-1.5 rounded-md border border-emerald-500 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            className="text-xs font-mono px-3 py-1.5 rounded-md border border-emerald-600 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
           >
             + new build
           </button>
@@ -106,8 +94,14 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
               onKeyDown={e => e.key === 'Enter' && createBuild()}
             />
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowNew(false)} className="text-xs font-mono px-3 py-1.5 text-gray-400 hover:text-gray-200">cancel</button>
-              <button onClick={createBuild} className="text-xs font-mono px-3 py-1.5 rounded-md border border-emerald-500 text-emerald-400 hover:bg-emerald-500/10">create</button>
+              <button onClick={() => setShowNew(false)} className="text-xs font-mono px-3 py-1.5 text-gray-500 hover:text-gray-300">cancel</button>
+              <button
+                onClick={createBuild}
+                disabled={loading}
+                className="text-xs font-mono px-3 py-1.5 rounded-md border border-emerald-600 text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-40"
+              >
+                {loading ? 'creating…' : 'create'}
+              </button>
             </div>
           </div>
         )}
@@ -134,7 +128,7 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
                       <span className="text-emerald-400 font-mono text-sm font-semibold">{pct}%</span>
                       <button
                         onClick={e => { e.preventDefault(); deleteBuild(build.id) }}
-                        className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
+                        className="text-gray-700 hover:text-gray-400 text-sm transition-colors"
                       >
                         ×
                       </button>
@@ -144,7 +138,7 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
                     <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   {autoCount > 0 && (
-                    <div className="text-xs text-gray-600 font-mono mt-2">{autoCount} auto-verified</div>
+                    <div className="text-[10px] text-gray-600 font-mono mt-1.5">{autoCount} auto-verified</div>
                   )}
                 </div>
               </Link>

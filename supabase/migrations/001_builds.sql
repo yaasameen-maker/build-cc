@@ -1,35 +1,67 @@
-create table if not exists builds (
-  id           uuid primary key default gen_random_uuid(),
-  user_id      uuid references auth.users not null,
-  name         text not null,
-  repo         text,
-  lang         text,
-  description  text,
-  checks       jsonb default '{}',
-  auto_checks  jsonb default '{}',
-  custom_items jsonb default '{}',
-  docs         jsonb default '[]',
-  section_open jsonb default '{}',
-  gh_data      jsonb default '{}',
-  signals      jsonb default '{}',
-  dep          jsonb default '{}',
-  last_scan    timestamptz,
-  created_at   timestamptz default now(),
-  updated_at   timestamptz default now()
+-- NextAuth.js required tables
+CREATE TABLE IF NOT EXISTS verification_token (
+  identifier TEXT NOT NULL,
+  expires TIMESTAMPTZ NOT NULL,
+  token TEXT NOT NULL,
+  PRIMARY KEY (identifier, token)
 );
 
-alter table builds enable row level security;
+CREATE TABLE IF NOT EXISTS accounts (
+  id SERIAL PRIMARY KEY,
+  "userId" INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  "providerAccountId" TEXT NOT NULL,
+  refresh_token TEXT,
+  access_token TEXT,
+  expires_at BIGINT,
+  id_token TEXT,
+  scope TEXT,
+  session_state TEXT,
+  token_type TEXT
+);
 
-create policy "users own their builds"
-  on builds for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+CREATE TABLE IF NOT EXISTS sessions (
+  id SERIAL PRIMARY KEY,
+  "userId" INTEGER NOT NULL,
+  expires TIMESTAMPTZ NOT NULL,
+  "sessionToken" TEXT NOT NULL UNIQUE
+);
 
-create or replace function update_updated_at()
-returns trigger language plpgsql as $$
-begin new.updated_at = now(); return new; end;
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  email TEXT UNIQUE,
+  "emailVerified" TIMESTAMPTZ,
+  image TEXT
+);
+
+-- builds table — user_id references the NextAuth users table
+CREATE TABLE IF NOT EXISTS builds (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  repo         TEXT,
+  lang         TEXT,
+  description  TEXT,
+  checks       JSONB DEFAULT '{}',
+  auto_checks  JSONB DEFAULT '{}',
+  custom_items JSONB DEFAULT '{}',
+  docs         JSONB DEFAULT '[]',
+  section_open JSONB DEFAULT '{}',
+  gh_data      JSONB DEFAULT '{}',
+  signals      JSONB DEFAULT '{}',
+  dep          JSONB DEFAULT '{}',
+  last_scan    TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ DEFAULT now(),
+  updated_at   TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN new.updated_at = now(); RETURN new; END;
 $$;
 
-create trigger builds_updated_at
-  before update on builds
-  for each row execute function update_updated_at();
+CREATE TRIGGER builds_updated_at
+  BEFORE UPDATE ON builds
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
