@@ -18,13 +18,13 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (Object.keys(updates).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
   // Build SET clause dynamically
-  const entries = Object.entries(updates)
+  const entries = Object.entries(updates).filter((e): e is [string, NonNullable<typeof e[1]>] => e[1] !== undefined)
   const setClauses = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
   const values = entries.map(([, v]) => typeof v === 'object' ? JSON.stringify(v) : v)
 
   await sql.unsafe(
     `UPDATE builds SET ${setClauses}, updated_at = now() WHERE id = $${entries.length + 1} AND user_id = $${entries.length + 2}`,
-    [...values, id, session.user.id]
+    [...values, id, session.user.id] as (string | number | boolean | object | null)[]
   )
 
   return NextResponse.json({ ok: true })
