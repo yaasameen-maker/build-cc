@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
   // Build SET clause dynamically
   const entries = Object.entries(updates).filter((e): e is [string, NonNullable<typeof e[1]>] => e[1] !== undefined)
   const setClauses = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
-  const values = entries.map(([, v]) => typeof v === 'object' ? JSON.stringify(v) : v)
+  const values = entries.map(([, v]) => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v) as string | number | boolean | null)
 
   await sql.unsafe(
     `UPDATE builds SET ${setClauses}, updated_at = now() WHERE id = $${entries.length + 1} AND user_id = $${entries.length + 2}`,
