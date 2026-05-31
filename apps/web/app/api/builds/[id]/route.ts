@@ -24,7 +24,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
 
   await sql.unsafe(
     `UPDATE builds SET ${setClauses}, updated_at = now() WHERE id = $${entries.length + 1} AND user_id = $${entries.length + 2}`,
-    [...values, id, session.user.id] as (string | number | boolean | object | null)[]
+    [...values, id, session.user.id]
   )
 
   return NextResponse.json({ ok: true })
