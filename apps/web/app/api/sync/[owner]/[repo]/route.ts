@@ -2,7 +2,10 @@ import { auth } from '@/lib/auth'
 import sql from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-const API_URL = process.env.API_URL ?? 'http://localhost:8000'
+const rawApiUrl = process.env.API_URL ?? ''
+const API_URL = rawApiUrl && !rawApiUrl.startsWith('http')
+  ? `https://${rawApiUrl}`
+  : rawApiUrl || 'http://localhost:8000'
 
 export async function POST(
   request: Request,
