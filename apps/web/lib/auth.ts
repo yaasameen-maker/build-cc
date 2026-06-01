@@ -20,11 +20,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = user.id
       return session
     },
-    async jwt({ token, account }) {
-      // Store the GitHub OAuth access token so we can use it for API calls
-      if (account?.access_token) token.githubToken = account.access_token
-      return token
-    },
   },
   session: { strategy: 'database' },
 })
