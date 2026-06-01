@@ -10,8 +10,9 @@ import SyncBar from '@/components/SyncBar'
 import DeploymentPanel from '@/components/DeploymentPanel'
 import AgentScripts from '@/components/AgentScripts'
 import SignalDebug from '@/components/SignalDebug'
+import ResourcesTab from '@/components/ResourcesTab'
 
-type Tab = 'checklist' | 'github' | 'deployment' | 'scripts'
+type Tab = 'checklist' | 'github' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
 type SyncState = 'idle' | 'scanning' | 'done' | 'error'
 
@@ -191,7 +192,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-gray-800 mb-4">
-          {(['checklist', 'github', 'deployment', 'scripts'] as Tab[]).map(t => (
+          {(['checklist', 'github', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -247,6 +248,9 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Scripts tab */}
         {tab === 'scripts' && <AgentScripts />}
+
+        {/* Resources tab */}
+        {tab === 'resources' && <ResourcesTab />}
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import sql from '@/lib/db'
 import { NextResponse } from 'next/server'
 
 const API_URL = process.env.API_URL ?? 'http://localhost:8000'
@@ -9,25 +10,23 @@ export async function POST(
 ) {
   const { owner, repo } = await params
   const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Retrieve the GitHub OAuth token from the session token cookie
-  // NextAuth stores provider tokens in the account table — fetch it
-  const body = await request.json().catch(() => ({}))
+  const [account] = await sql`
+    SELECT access_token FROM accounts
+    WHERE "userId" = ${session.user.id} AND provider = 'github'`
 
-  // The GitHub token is available as session.user.githubToken if we expose it
-  // For now we pass it from the client via the request body
-  const { githubToken } = body
-
-  if (!githubToken) {
-    return NextResponse.json({ error: 'GitHub token required' }, { status: 400 })
+  if (!account?.access_token) {
+    return NextResponse.json({ error: 'GitHub token not found — reconnect your GitHub account' }, { status: 400 })
   }
+
+  const body = await request.json().catch(() => ({}))
 
   const response = await fetch(`${API_URL}/sync/${owner}/${repo}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-github-token': githubToken,
+      'x-github-token': account.access_token,
     },
     body: JSON.stringify({ branch: body.branch }),
   })
