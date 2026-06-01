@@ -8,6 +8,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejec
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  debug: true,
+  logger: {
+    error(code, ...message) { console.error('[auth]', code, ...message) },
+    warn(code, ...message) { console.warn('[auth]', code, ...message) },
+    debug(code, ...message) { console.log('[auth]', code, ...message) },
+  },
   adapter: PostgresAdapter(pool),
   providers: [
     GitHub({
