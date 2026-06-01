@@ -12,19 +12,19 @@ function buildAdapter(): Adapter {
           VALUES (${user.name ?? null}, ${user.email ?? null}, ${user.emailVerified ?? null}, ${user.image ?? null})
           RETURNING *`
         return row as any
-      } catch (e) { console.error('[adapter] createUser failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR createUser: ${e?.message} code=${e?.code}`); throw e }
     },
     async getUser(id) {
       try {
         const [row] = await sql`SELECT * FROM users WHERE id = ${id}`
         return (row ?? null) as any
-      } catch (e) { console.error('[adapter] getUser failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR getUser: ${e?.message} code=${e?.code}`); throw e }
     },
     async getUserByEmail(email) {
       try {
         const [row] = await sql`SELECT * FROM users WHERE email = ${email}`
         return (row ?? null) as any
-      } catch (e) { console.error('[adapter] getUserByEmail failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR getUserByEmail: ${e?.message} code=${e?.code}`); throw e }
     },
     async getUserByAccount({ provider, providerAccountId }) {
       try {
@@ -33,7 +33,7 @@ function buildAdapter(): Adapter {
           JOIN accounts a ON a."userId" = u.id
           WHERE a.provider = ${provider} AND a."providerAccountId" = ${providerAccountId}`
         return (row ?? null) as any
-      } catch (e) { console.error('[adapter] getUserByAccount failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR getUserByAccount: ${e?.message} code=${e?.code}`); throw e }
     },
     async updateUser(user) {
       try {
@@ -42,7 +42,7 @@ function buildAdapter(): Adapter {
             "emailVerified" = ${user.emailVerified ?? null}, image = ${user.image ?? null}
           WHERE id = ${user.id!} RETURNING *`
         return row as any
-      } catch (e) { console.error('[adapter] updateUser failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR updateUser: ${e?.message} code=${e?.code}`); throw e }
     },
     async linkAccount(account) {
       try {
@@ -54,7 +54,7 @@ function buildAdapter(): Adapter {
             ${account.access_token ?? null}, ${account.expires_at ?? null},
             ${account.id_token ?? null}, ${account.scope ?? null},
             ${(account.session_state as string | null) ?? null}, ${account.token_type ?? null})`
-      } catch (e) { console.error('[adapter] linkAccount failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR linkAccount: ${e?.message} code=${e?.code}`); throw e }
     },
     async createSession({ sessionToken, userId, expires }) {
       try {
@@ -62,7 +62,7 @@ function buildAdapter(): Adapter {
           INSERT INTO sessions ("sessionToken", "userId", expires)
           VALUES (${sessionToken}, ${userId}, ${expires}) RETURNING *`
         return row as any
-      } catch (e) { console.error('[adapter] createSession failed:', e); throw e }
+      } catch (e: any) { console.error(`ERR createSession: ${e?.message} code=${e?.code}`); throw e }
     },
     async getSessionAndUser(sessionToken) {
       const [row] = await sql`
