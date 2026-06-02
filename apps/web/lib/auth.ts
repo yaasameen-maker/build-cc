@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import GitHub from 'next-auth/providers/github'
 import type { Adapter } from 'next-auth/adapters'
 import sql from '@/lib/db'
+import { authConfig } from '@/auth.config'
 
 function buildAdapter(): Adapter {
   return {
@@ -86,6 +87,7 @@ function buildAdapter(): Adapter {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   trustHost: true,
   adapter: buildAdapter(),
   providers: [
@@ -99,6 +101,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async session({ session, user }) {
       session.user.id = user.id
       return session
