@@ -99,6 +99,7 @@ export default function PrivacyPage() {
                 'We do not sell your data to anyone.',
                 'We do not use your data for advertising.',
                 'We do not include any third-party analytics or tracking scripts.',
+                'We do not use Google Sign-In or any Google authentication. Any Google option you see during sign-in is displayed by GitHub on their own login page — our app communicates only with GitHub.',
                 'We do not write to, modify, or delete your GitHub repositories.',
                 'We do not share your data with any party other than the infrastructure providers listed below.',
               ].map(item => (
