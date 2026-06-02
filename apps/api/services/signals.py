@@ -47,6 +47,7 @@ SIGNAL_PATTERNS: dict[str, Callable[[FileList], bool]] = {
     ),
     "has_prompts":        lambda f: _any(f, "/prompts/", "system_prompt", "SYSTEM.md"),
     "has_vector_db":      lambda f: _any(f, "pinecone", "chroma", "weaviate", "pgvector"),
+    "has_computer_vision": lambda f: _any(f, "cv2", "opencv", "yolo", "mediapipe", "torchvision", "vision_model", "object_detection", "image_classify"),
     "has_evals":          lambda f: _any(f, "/evals/", "golden", "eval_"),
     "has_memory":         lambda f: _any(f, "honcho", "memory_", "/memory/"),
     "has_health":         lambda f: any(
@@ -109,6 +110,12 @@ def apply_python_deps(signals: dict, content: str) -> None:
         signals["has_vector_db"] = any(v in content for v in ["pgvector", "pinecone-client", "chromadb", "weaviate-client", "qdrant-client"])
     if not signals.get("has_memory"):
         signals["has_memory"] = "honcho" in content
+    if not signals.get("has_computer_vision"):
+        signals["has_computer_vision"] = any(v in content for v in [
+            "opencv-python", "cv2", "ultralytics", "mediapipe",
+            "torchvision", "scikit-image", "imageio", "Pillow", "pillow",
+            "roboflow", "supervision", "detectron2",
+        ])
     signals["has_backend_deps"] = True
 
 

@@ -11,6 +11,7 @@ import DeploymentPanel from '@/components/DeploymentPanel'
 import AgentScripts from '@/components/AgentScripts'
 import SignalDebug from '@/components/SignalDebug'
 import ResourcesTab from '@/components/ResourcesTab'
+import StackBadges from '@/components/StackBadges'
 
 type Tab = 'checklist' | 'github' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
@@ -168,6 +169,13 @@ export default function BuildDetail({ build: initialBuild }: Props) {
             <span><span className="text-indigo-500">■</span> manual</span>
             <span><span className="text-amber-500">■</span> review</span>
           </div>
+
+          {/* Stack badges — compact row */}
+          {Object.keys(build.signals ?? {}).length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-800">
+              <StackBadges signals={build.signals ?? {}} variant="compact" />
+            </div>
+          )}
         </div>
 
         {/* Sync bar */}
@@ -233,13 +241,20 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* GitHub tab */}
         {tab === 'github' && (
-          <SignalDebug
-            signals={build.signals ?? {}}
-            commits={build.gh_data?.commits ?? []}
-            prs={build.gh_data?.prs ?? []}
-            issues={build.gh_data?.issues ?? []}
-            lastScan={build.last_scan}
-          />
+          <>
+            {Object.keys(build.signals ?? {}).length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
+                <StackBadges signals={build.signals ?? {}} variant="full" />
+              </div>
+            )}
+            <SignalDebug
+              signals={build.signals ?? {}}
+              commits={build.gh_data?.commits ?? []}
+              prs={build.gh_data?.prs ?? []}
+              issues={build.gh_data?.issues ?? []}
+              lastScan={build.last_scan}
+            />
+          </>
         )}
 
         {/* Deployment tab */}
