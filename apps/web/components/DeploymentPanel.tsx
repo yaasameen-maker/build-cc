@@ -91,7 +91,7 @@ export default function DeploymentPanel({ dep, onChange }: Props) {
         {aio && <div className="text-[9px] font-mono text-gray-600 mb-2">{aio.desc}</div>}
         {dep.aioPlatform && (
           <>
-            <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
               <DepField label="dashboard URL" value={dep.aioDashUrl} placeholder={aio?.dash ?? ''} onChange={v => set('aioDashUrl', v)} />
               <DepField label="live frontend URL" value={dep.aioUrl} placeholder="https://myapp.up.railway.app" onChange={v => set('aioUrl', v)} />
             </div>
@@ -105,7 +105,7 @@ export default function DeploymentPanel({ dep, onChange }: Props) {
       </div>
 
       {/* FE + BE cards */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {/* Frontend */}
         <div className="bg-gray-800/40 border border-gray-700 rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-2">

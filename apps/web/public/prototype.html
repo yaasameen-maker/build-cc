@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>build.cc — Phone Prototype</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #0a0a0a; font-family: 'Segoe UI', system-ui, sans-serif; }
+  .phone { width: 390px; height: 844px; background: #030712; border-radius: 44px; overflow: hidden; border: 2px solid #1f2937; flex-shrink: 0; display: flex; flex-direction: column; }
+  .phone-screen { flex: 1; overflow-y: auto; scrollbar-width: none; }
+  .phone-screen::-webkit-scrollbar { display: none; }
+  .label { color: #6b7280; font-size: 11px; font-family: monospace; text-align: center; margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
+  code { font-family: ui-monospace, monospace; }
+</style>
+</head>
+<body class="p-8">
+
+<h1 class="text-white text-xl font-bold mb-2">build<span class="text-emerald-400">.</span>cc — Mobile Prototype</h1>
+<p class="text-gray-500 text-sm font-mono mb-10">390×844 · iPhone 14 · All screens</p>
+
+<div class="flex flex-wrap gap-10 items-start">
+
+  <!-- SCREEN 1: Sign-in -->
+  <div>
+    <div class="label">1 · Sign-in</div>
+    <div class="phone">
+      <div class="phone-screen flex flex-col items-center justify-center p-6 bg-gray-950 min-h-full">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full text-center">
+          <div class="text-xl font-bold text-white mb-1 tracking-tight">build<span class="text-emerald-400">.</span>cc</div>
+          <p class="text-gray-400 text-sm mb-6">Build pipeline command center</p>
+          <button class="w-full flex items-center justify-center gap-2 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm font-medium">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            Sign in with GitHub
+          </button>
+          <p class="text-gray-600 text-xs mt-3">Requests <code class="text-gray-500">repo</code> scope</p>
+          <p class="text-gray-700 text-xs mt-1">By signing in you agree to our <span class="text-gray-500 underline">Privacy Policy</span></p>
+        </div>
+        <div class="mt-4 w-full bg-gray-900 border border-gray-700 rounded-2xl p-4 text-center">
+          <p class="text-xs text-gray-400 mb-3">Install build.cc as an app</p>
+          <button class="w-full bg-emerald-600 text-white text-xs font-mono py-2 rounded-lg">↓ Add to Home Screen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Builds list -->
+  <div>
+    <div class="label">2 · Builds list</div>
+    <div class="phone">
+      <div class="phone-screen bg-gray-950">
+        <nav class="border-b border-gray-800 px-4 py-3 flex items-center gap-3 min-h-[48px]">
+          <span class="font-bold text-white tracking-tight">build<span class="text-emerald-400">.</span>cc</span>
+          <div class="ml-auto flex items-center gap-3">
+            <div class="w-6 h-6 rounded-full bg-gray-700"></div>
+            <span class="text-gray-600 text-xs font-mono">sign out</span>
+          </div>
+        </nav>
+        <div class="px-4 py-6">
+          <div class="flex items-center justify-between mb-5">
+            <span class="text-xs font-mono text-gray-500 uppercase tracking-widest">builds</span>
+            <button class="text-xs font-mono px-3 py-1.5 rounded-md border border-emerald-600 text-emerald-400">+ new build</button>
+          </div>
+          <!-- Build cards -->
+          <div class="space-y-3">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="font-semibold text-white text-sm">WattNext</div>
+                  <div class="text-gray-500 text-xs font-mono mt-0.5">yaasameen-maker/wattnext</div>
+                </div>
+                <span class="text-emerald-400 font-mono text-sm font-semibold">42%</span>
+              </div>
+              <div class="h-1 bg-gray-800 rounded-full overflow-hidden flex">
+                <div class="h-full bg-emerald-500" style="width:20%"></div>
+                <div class="h-full bg-indigo-500" style="width:22%"></div>
+              </div>
+              <div class="text-xs text-gray-600 font-mono mt-1.5">8 auto-verified</div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="font-semibold text-white text-sm">Morning Briefing</div>
+                  <div class="text-gray-500 text-xs font-mono mt-0.5">yaasameen-maker/morning-briefing</div>
+                </div>
+                <span class="text-emerald-400 font-mono text-sm font-semibold">18%</span>
+              </div>
+              <div class="h-1 bg-gray-800 rounded-full overflow-hidden flex">
+                <div class="h-full bg-emerald-500" style="width:10%"></div>
+                <div class="h-full bg-indigo-500" style="width:8%"></div>
+              </div>
+              <div class="text-xs text-gray-600 font-mono mt-1.5">3 auto-verified</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Checklist — frontend -->
+  <div>
+    <div class="label">3 · Checklist · Frontend</div>
+    <div class="phone">
+      <div class="phone-screen bg-gray-950">
+        <nav class="border-b border-gray-800 px-4 py-3 flex items-center gap-2 min-h-[48px]">
+          <span class="text-gray-500 text-sm">←</span>
+          <span class="font-bold text-white tracking-tight">build<span class="text-emerald-400">.</span>cc</span>
+          <span class="text-gray-600 text-xs font-mono truncate">/ WattNext</span>
+        </nav>
+        <div class="px-4 py-4">
+          <!-- Stats 3-col -->
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-violet-400">14/49</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">frontend</div></div>
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-blue-400">8/57</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">backend</div></div>
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-amber-400">42%</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">overall</div></div>
+          </div>
+          <!-- Progress bar -->
+          <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden flex mb-1">
+            <div class="h-full bg-emerald-500" style="width:20%"></div>
+            <div class="h-full bg-indigo-500" style="width:22%"></div>
+            <div class="h-full bg-amber-500" style="width:5%"></div>
+          </div>
+          <!-- Sync bar -->
+          <div class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 flex items-center gap-2 mb-3 mt-2">
+            <div class="flex-1 text-[10px] font-mono text-gray-500 truncate">Last scanned 1:31 AM — 8 auto-verified</div>
+            <button class="text-[10px] font-mono px-2 py-1 rounded border border-gray-600 text-gray-400 flex-shrink-0">↻ sync</button>
+          </div>
+          <!-- Tabs -->
+          <div class="flex border-b border-gray-800 mb-3 overflow-x-auto">
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-white text-white whitespace-nowrap flex-shrink-0">checklist</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap flex-shrink-0">github</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap flex-shrink-0">deployment</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap flex-shrink-0">scripts</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap flex-shrink-0">resources</button>
+          </div>
+          <!-- FE/BE toggle -->
+          <div class="flex p-1 bg-gray-800/60 rounded-lg mb-3">
+            <button class="flex-1 text-xs font-mono py-1.5 rounded-md bg-gray-700 text-white">🖥 frontend</button>
+            <button class="flex-1 text-xs font-mono py-1.5 rounded-md text-gray-500">⚙ backend</button>
+          </div>
+          <!-- Sections -->
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-amber-500/40 rounded-lg">
+              <span class="text-sm">📄</span>
+              <span class="text-xs font-semibold flex-1 text-gray-200">PRD & requirements</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">⚠ 1</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">1/7</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">🎨</span>
+              <span class="text-xs font-semibold flex-1 text-gray-200">UX & design</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">0/9</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">💻</span>
+              <span class="text-xs font-semibold flex-1 text-gray-200">frontend build</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">3/8</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">🚀</span>
+              <span class="text-xs font-semibold flex-1 text-gray-200">frontend deployment</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">5/10</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">🧪</span>
+              <span class="text-xs font-semibold flex-1 text-gray-200">frontend testing</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">0/6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Checklist — backend -->
+  <div>
+    <div class="label">4 · Checklist · Backend</div>
+    <div class="phone">
+      <div class="phone-screen bg-gray-950">
+        <nav class="border-b border-gray-800 px-4 py-3 flex items-center gap-2 min-h-[48px]">
+          <span class="text-gray-500 text-sm">←</span>
+          <span class="font-bold text-white tracking-tight">build<span class="text-emerald-400">.</span>cc</span>
+          <span class="text-gray-600 text-xs font-mono truncate">/ WattNext</span>
+        </nav>
+        <div class="px-4 py-4">
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-violet-400">14/49</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">frontend</div></div>
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-blue-400">8/57</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">backend</div></div>
+            <div class="bg-gray-800 rounded-lg p-2 text-center"><div class="text-sm font-semibold font-mono text-amber-400">42%</div><div class="text-[9px] font-mono text-gray-600 mt-0.5">overall</div></div>
+          </div>
+          <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden flex mb-3">
+            <div class="h-full bg-emerald-500" style="width:20%"></div>
+            <div class="h-full bg-indigo-500" style="width:22%"></div>
+          </div>
+          <div class="flex border-b border-gray-800 mb-3 overflow-x-auto">
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-white text-white whitespace-nowrap">checklist</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">github</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">deployment</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">scripts</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">resources</button>
+          </div>
+          <div class="flex p-1 bg-gray-800/60 rounded-lg mb-3">
+            <button class="flex-1 text-xs font-mono py-1.5 rounded-md text-gray-500">🖥 frontend</button>
+            <button class="flex-1 text-xs font-mono py-1.5 rounded-md bg-gray-700 text-white">⚙ backend</button>
+          </div>
+          <!-- API section expanded -->
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">🕸️</span><span class="text-xs font-semibold flex-1 text-gray-200">architecture & data</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">1/9</span>
+            </div>
+            <!-- API section open -->
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-amber-500/40 rounded-lg">
+              <span class="text-sm">🔌</span><span class="text-xs font-semibold flex-1 text-gray-200">API & integrations</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">⚠ 3</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">0/7</span>
+            </div>
+            <div class="px-3 space-y-0.5">
+              <div class="flex items-start gap-2.5 py-1.5 rounded-md">
+                <div class="w-3.5 h-3.5 rounded-sm border border-amber-500 bg-amber-500/10 flex items-center justify-center text-[8px] text-amber-500 font-bold mt-0.5 flex-shrink-0">?</div>
+                <div class="text-xs text-gray-200">API contract agreed before code <span class="text-[9px] font-mono bg-pink-500/10 text-pink-400 px-1 py-0.5 rounded-full">new</span> <span class="text-[9px] font-mono bg-amber-500/10 text-amber-400 px-1 py-0.5 rounded">⚠ review</span></div>
+              </div>
+              <div class="flex items-start gap-2.5 py-1.5 rounded-md">
+                <div class="w-3.5 h-3.5 rounded-sm border border-amber-500 bg-amber-500/10 flex items-center justify-center text-[8px] text-amber-500 font-bold mt-0.5 flex-shrink-0">?</div>
+                <div class="text-xs text-gray-200">API design pattern selected <span class="text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-full">be</span></div>
+              </div>
+              <div class="flex items-start gap-2.5 py-1.5 rounded-md">
+                <div class="w-3.5 h-3.5 rounded-sm border border-gray-600 mt-0.5 flex-shrink-0"></div>
+                <div class="text-xs text-gray-200">CORS configured for frontend origin <span class="text-[9px] font-mono bg-emerald-500/10 text-emerald-400 px-1 py-0.5 rounded-full">be</span></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-800/60 border border-gray-700 rounded-lg">
+              <span class="text-sm">🧠</span><span class="text-xs font-semibold flex-1 text-gray-200">LLM integration</span>
+              <span class="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">3/9</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: Deployment tab -->
+  <div>
+    <div class="label">5 · Deployment tab</div>
+    <div class="phone">
+      <div class="phone-screen bg-gray-950">
+        <nav class="border-b border-gray-800 px-4 py-3 flex items-center gap-2 min-h-[48px]">
+          <span class="text-gray-500 text-sm">←</span>
+          <span class="font-bold text-white tracking-tight">build<span class="text-emerald-400">.</span>cc</span>
+          <span class="text-gray-600 text-xs font-mono truncate">/ WattNext</span>
+        </nav>
+        <div class="px-4 py-4">
+          <div class="flex border-b border-gray-800 mb-4 overflow-x-auto">
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">checklist</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">github</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-white text-white whitespace-nowrap">deployment</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">scripts</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">resources</button>
+          </div>
+          <!-- AIO -->
+          <div class="bg-gray-800/40 border border-gray-700 rounded-lg p-3 mb-2">
+            <div class="text-xs font-semibold text-gray-200 mb-2">all-in-one platforms</div>
+            <div class="flex gap-1.5 flex-wrap mb-3">
+              <button class="text-[10px] font-mono px-2.5 py-1 rounded border border-emerald-500 text-emerald-400 bg-emerald-500/5 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Railway</button>
+              <button class="text-[10px] font-mono px-2.5 py-1 rounded border border-gray-700 text-gray-500">Supabase</button>
+            </div>
+            <div class="space-y-2">
+              <div><label class="text-[9px] font-mono text-gray-600 uppercase">dashboard URL</label><input class="w-full mt-1 bg-gray-900 border border-gray-700 rounded px-2 py-2 text-[10px] font-mono text-gray-200" placeholder="https://railway.app/dashboard"></div>
+              <div><label class="text-[9px] font-mono text-gray-600 uppercase">live frontend URL</label><input class="w-full mt-1 bg-gray-900 border border-gray-700 rounded px-2 py-2 text-[10px] font-mono text-gray-200" placeholder="https://myapp.up.railway.app"></div>
+            </div>
+          </div>
+          <!-- FE card -->
+          <div class="bg-gray-800/40 border border-gray-700 rounded-lg p-3 mb-2">
+            <div class="flex items-center gap-1.5 mb-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-xs font-semibold text-gray-300">frontend</span></div>
+            <div class="flex gap-1 flex-wrap mb-2">
+              <button class="text-[9px] font-mono px-1.5 py-0.5 rounded border border-emerald-600 text-emerald-400">Vercel <span class="text-emerald-600 text-[7px]">free</span></button>
+              <button class="text-[9px] font-mono px-1.5 py-0.5 rounded border border-gray-700 text-gray-600">Netlify</button>
+              <button class="text-[9px] font-mono px-1.5 py-0.5 rounded border border-gray-700 text-gray-600">CF Pages</button>
+            </div>
+            <div class="space-y-1.5">
+              <div><label class="text-[9px] font-mono text-gray-600 uppercase">live URL</label><input class="w-full mt-1 bg-gray-900 border border-gray-700 rounded px-2 py-2 text-[10px] font-mono text-gray-400" value="https://build-cc.vercel.app"></div>
+            </div>
+          </div>
+          <!-- BE card -->
+          <div class="bg-gray-800/40 border border-gray-700 rounded-lg p-3">
+            <div class="flex items-center gap-1.5 mb-2"><span class="w-1.5 h-1.5 rounded-full bg-gray-700"></span><span class="text-xs font-semibold text-gray-300">backend</span></div>
+            <div class="flex gap-1 flex-wrap mb-2">
+              <button class="text-[9px] font-mono px-1.5 py-0.5 rounded border border-emerald-600 text-emerald-400">Railway <span class="text-emerald-600 text-[7px]">free</span></button>
+              <button class="text-[9px] font-mono px-1.5 py-0.5 rounded border border-gray-700 text-gray-600">Render</button>
+            </div>
+            <div><label class="text-[9px] font-mono text-gray-600 uppercase">API URL</label><input class="w-full mt-1 bg-gray-900 border border-gray-700 rounded px-2 py-2 text-[10px] font-mono text-gray-700" placeholder="https://api.railway.app"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: Resources tab -->
+  <div>
+    <div class="label">6 · Resources tab</div>
+    <div class="phone">
+      <div class="phone-screen bg-gray-950">
+        <nav class="border-b border-gray-800 px-4 py-3 flex items-center gap-2 min-h-[48px]">
+          <span class="text-gray-500 text-sm">←</span>
+          <span class="font-bold text-white tracking-tight">build<span class="text-emerald-400">.</span>cc</span>
+          <span class="text-gray-600 text-xs font-mono truncate">/ WattNext</span>
+        </nav>
+        <div class="px-4 py-4">
+          <div class="flex border-b border-gray-800 mb-4 overflow-x-auto">
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">checklist</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">github</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">deployment</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">scripts</button>
+            <button class="text-xs font-mono px-3 py-2 border-b-2 border-white text-white whitespace-nowrap">resources</button>
+          </div>
+          <!-- Sub-tabs -->
+          <div class="flex border-b border-gray-800 mb-4 overflow-x-auto">
+            <button class="text-xs font-mono px-4 py-2 border-b-2 border-emerald-400 text-white whitespace-nowrap">models</button>
+            <button class="text-xs font-mono px-4 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">by use case</button>
+            <button class="text-xs font-mono px-4 py-2 border-b-2 border-transparent text-gray-500 whitespace-nowrap">resources</button>
+          </div>
+          <!-- Category pills -->
+          <div class="flex gap-2 flex-wrap mb-4">
+            <button class="text-[10px] font-mono px-3 py-1 rounded-full border text-white" style="background:#534AB7;border-color:#534AB7">frontier & reasoning</button>
+            <button class="text-[10px] font-mono px-3 py-1 rounded-full border border-gray-700 text-gray-500">coding</button>
+            <button class="text-[10px] font-mono px-3 py-1 rounded-full border border-gray-700 text-gray-500">speed & volume</button>
+          </div>
+          <!-- Model cards (single column) -->
+          <div class="space-y-3">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div><div class="text-sm font-semibold font-mono text-white">Claude Opus 4.8</div><div class="text-[10px] text-gray-500 font-mono mt-0.5">Anthropic</div></div>
+                <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 flex-shrink-0">paid API</span>
+              </div>
+              <p class="text-[10px] text-gray-400 font-mono leading-relaxed mb-2">Best-in-class instruction following. Complex multi-step reasoning and agent reliability. SWE-bench leader at 80.8%.</p>
+              <div class="flex gap-4 text-[9px] font-mono text-gray-600">
+                <span>ctx: 200K</span><span>~$15/$75 per 1M</span><span>⚡ medium</span>
+              </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div><div class="text-sm font-semibold font-mono text-white">GPT-5.5 Pro</div><div class="text-[10px] text-gray-500 font-mono mt-0.5">OpenAI</div></div>
+                <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 flex-shrink-0">paid API</span>
+              </div>
+              <p class="text-[10px] text-gray-400 font-mono leading-relaxed mb-2">100% AIME 2025, 92.4% GPQA Diamond. Strongest math/science benchmarks. Multimodal with image reasoning.</p>
+              <div class="flex gap-4 text-[9px] font-mono text-gray-600">
+                <span>ctx: 1M+</span><span>via OpenRouter</span><span>⚡ medium</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="text-gray-700 text-xs font-mono mt-12 text-center">build.cc prototype · all screens phone-optimized · 390px width</p>
+</body>
+</html>

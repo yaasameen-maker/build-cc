@@ -122,14 +122,14 @@ export default function ResourcesTab() {
   return (
     <div className="text-white">
       {/* Top tabs */}
-      <div className="flex gap-0 border-b border-gray-800 mb-4">
+      <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto">
         {(['models', 'by use case', 'resources'] as const).map(t => {
           const key = t === 'by use case' ? 'by-usecase' : t as TopTab
           return (
             <button
               key={t}
               onClick={() => setTopTab(key)}
-              className={`text-xs font-mono px-4 py-2 border-b-2 transition-colors ${topTab === key ? 'border-emerald-400 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+              className={`text-xs font-mono px-4 py-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 min-h-[44px] ${topTab === key ? 'border-emerald-400 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
             >
               {t}
             </button>
@@ -194,7 +194,7 @@ export default function ResourcesTab() {
 
       {/* By use case panel */}
       {topTab === 'by-usecase' && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {USE_CASES.map(uc => (
             <div key={uc.title} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
               <div className="text-xs font-semibold mb-3 flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function ResourcesTab() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
                 {section}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {cards.map(card => (
                   <a
                     key={card.name}
