@@ -43,20 +43,28 @@ export default function ChecklistSection({ section, build, onToggle }: Props) {
     (acc, item) => {
       const s = getItemState(build, section.id, item.id)
       if (s === 'auto' || s === 'manual') acc.done++
+      if (s === 'review') acc.review++
       acc.total++
       return acc
     },
-    { done: 0, total: 0 }
+    { done: 0, total: 0, review: 0 }
   )
 
   return (
     <div className="mb-1.5">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-2 bg-gray-800/60 hover:bg-gray-800 border border-gray-700 rounded-lg text-left transition-colors"
+        className={`w-full flex items-center gap-2 px-3 py-2 bg-gray-800/60 hover:bg-gray-800 border rounded-lg text-left transition-colors ${
+          counts.review > 0 && !open ? 'border-amber-500/40' : 'border-gray-700'
+        }`}
       >
         <span className="text-sm">{section.icon}</span>
         <span className="text-xs font-semibold flex-1 text-gray-200">{section.title}</span>
+        {counts.review > 0 && !open && (
+          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            ⚠ {counts.review}
+          </span>
+        )}
         <span className="text-[10px] font-mono text-gray-500 bg-gray-900 px-1.5 py-0.5 rounded-full border border-gray-700">
           {counts.done}/{counts.total}
         </span>
