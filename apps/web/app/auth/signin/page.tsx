@@ -21,6 +21,12 @@ export default function SignInPage() {
         <p className="text-gray-600 text-xs mt-4">
           Requests <code className="text-gray-500">repo</code> scope to scan repositories
         </p>
+        <p className="text-gray-700 text-xs mt-2">
+          By signing in you agree to our{' '}
+          <a href="/privacy" className="text-gray-500 hover:text-gray-300 underline transition-colors">
+            Privacy Policy
+          </a>
+        </p>
       </div>
     </div>
   )
