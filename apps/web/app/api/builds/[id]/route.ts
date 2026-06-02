@@ -11,21 +11,19 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params
   const body = await req.json()
 
-  // Build a safe partial update — only allow known columns
   const allowed = ['name', 'checks', 'auto_checks', 'custom_items', 'docs', 'section_open', 'gh_data', 'signals', 'dep', 'last_scan'] as const
-  const updates = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k as typeof allowed[number])))
+  const colMap: Record<string, unknown> = {}
+  for (const col of allowed) {
+    if (col in body && body[col] !== undefined) colMap[col] = body[col]
+  }
 
-  if (Object.keys(updates).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+  if (Object.keys(colMap).length === 0) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
-  // Build SET clause dynamically
-  const entries = Object.entries(updates).filter((e): e is [string, NonNullable<typeof e[1]>] => e[1] !== undefined)
-  const setClauses = entries.map(([col], i) => `${col} = $${i + 1}`).join(', ')
-  const values = entries.map(([, v]) => (typeof v === 'object' && v !== null ? JSON.stringify(v) : v) as string | number | boolean | null)
-
-  await sql.unsafe(
-    `UPDATE builds SET ${setClauses}, updated_at = now() WHERE id = $${entries.length + 1} AND user_id = $${entries.length + 2}`,
-    [...values, id, session.user.id]
-  )
+  await sql`
+    UPDATE builds
+    SET ${sql(colMap)}, updated_at = now()
+    WHERE id = ${id} AND user_id = ${session.user.id}
+  `
 
   return NextResponse.json({ ok: true })
 }

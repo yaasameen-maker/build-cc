@@ -33,11 +33,12 @@ export default function BuildDetail({ build: initialBuild }: Props) {
   const [syncProgress, setSyncProgress] = useState(0)
 
   async function patch(data: object) {
-    await fetch(`/api/builds/${build.id}`, {
+    const res = await fetch(`/api/builds/${build.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
+    if (!res.ok) console.error('[patch] save failed:', res.status, await res.json().catch(() => ({})))
   }
 
   // ── Sync ──────────────────────────────────────────────────────────────────
