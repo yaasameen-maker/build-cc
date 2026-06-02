@@ -24,15 +24,7 @@ export default function SignInPage() {
             Sign in with GitHub
           </button>
         </form>
-        <div className="mt-4 mb-1 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2.5 text-left">
-          <p className="text-[11px] font-mono text-amber-400 leading-relaxed">
-            <span className="font-semibold">→ You&apos;ll be taken to github.com to sign in.</span>{' '}
-            GitHub may show a &ldquo;Continue with Google&rdquo; option — that&apos;s GitHub&apos;s own feature, not ours.
-            Sign in with your <span className="font-semibold">GitHub username and password</span>.
-            We have no Google integration.
-          </p>
-        </div>
-        <p className="text-gray-600 text-xs mt-3">
+        <p className="text-gray-600 text-xs mt-4">
           Requests <code className="text-gray-500">repo</code> scope to scan repositories
         </p>
         <p className="text-gray-700 text-xs mt-2">
