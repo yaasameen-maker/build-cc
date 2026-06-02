@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import type { Build } from '@/lib/types'
+import { handleSignOut } from '@/app/actions'
 
 interface GHRepo { full_name: string; name: string; private: boolean; description: string | null; updated_at: string }
 
@@ -99,8 +100,8 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
           <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full ml-auto flex-shrink-0" />
         )}
         <span className="text-gray-500 text-xs font-mono truncate max-w-[100px] hidden sm:block">{user.name}</span>
-        <form action="/api/auth/signout" method="POST">
-          <button className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors flex-shrink-0 min-h-[44px] flex items-center">sign out</button>
+        <form action={handleSignOut}>
+          <button type="submit" className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors flex-shrink-0 min-h-[44px] flex items-center">sign out</button>
         </form>
       </nav>
 
