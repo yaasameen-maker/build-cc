@@ -65,7 +65,7 @@ export default function StackBadges({ signals, variant = 'compact' }: Props) {
   return (
     <div>
       <div className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">detected in this build</div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {detected.map(c => (
           <div
             key={c.label}

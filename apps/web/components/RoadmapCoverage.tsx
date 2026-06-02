@@ -117,7 +117,7 @@ export default function RoadmapCoverage({ signals }: Props) {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {activeRoadmaps.map(roadmap => {
           const hitTopics = roadmap.topics.filter(t => topicHit(t, signals))
           const missTopics = roadmap.topics.filter(t => !topicHit(t, signals))
