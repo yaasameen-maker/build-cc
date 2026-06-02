@@ -83,11 +83,11 @@ export const BE_SECTIONS: ChecklistSection[] = [
     { id: '9', l: 'Module-to-module data linkage', tag: 'new' },
   ]},
   { id: 'be-api', icon: '🔌', title: 'API & integrations', items: [
-    { id: '1', l: 'API contract agreed before code', tag: 'new', auto: 'has_openapi', autoSignal: 'openapi.yaml / swagger.json detected' },
+    { id: '1', l: 'API contract agreed before code', tag: 'new', auto: 'has_openapi', autoSignal: 'openapi.yaml / swagger.json detected', autoWarn: 'has_api_routes' },
     { id: '2', l: 'API design pattern selected', tag: 'be', autoWarn: 'has_package_json', autoSignal: 'package.json found — check for tRPC/GraphQL/REST dep' },
     { id: '3', l: 'Third-party contracts documented', tag: 'be' },
     { id: '4', l: 'Webhook design', tag: 'be' },
-    { id: '5', l: 'API versioning strategy', tag: 'be' },
+    { id: '5', l: 'API versioning strategy', tag: 'be', autoWarn: 'has_api_routes', autoSignal: 'API routes detected — define versioning strategy' },
     { id: '6', l: 'Business rules at data layer', tag: 'new' },
     { id: '7', l: 'CORS configured for frontend origin', tag: 'be', auto: 'has_cors', autoSignal: 'CORS config detected' },
   ]},
