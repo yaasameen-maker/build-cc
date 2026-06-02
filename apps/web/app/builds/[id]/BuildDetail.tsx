@@ -12,6 +12,7 @@ import AgentScripts from '@/components/AgentScripts'
 import SignalDebug from '@/components/SignalDebug'
 import ResourcesTab from '@/components/ResourcesTab'
 import StackBadges from '@/components/StackBadges'
+import RoadmapCoverage from '@/components/RoadmapCoverage'
 
 type Tab = 'checklist' | 'github' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
@@ -247,6 +248,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
                 <StackBadges signals={build.signals ?? {}} variant="full" />
               </div>
             )}
+            <RoadmapCoverage signals={build.signals ?? {}} />
             <SignalDebug
               signals={build.signals ?? {}}
               commits={build.gh_data?.commits ?? []}

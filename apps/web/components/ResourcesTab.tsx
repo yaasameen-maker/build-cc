@@ -94,6 +94,12 @@ const RESOURCES: Record<string, Array<{ icon: string; name: string; desc: string
     { icon: '🔥', name: 'Firecrawl', desc: 'Web scraping and crawling MCP. Converts any website to LLM-ready markdown.', url: 'firecrawl.dev', link: 'https://www.firecrawl.dev', tag: 'freemium' },
     { icon: '📚', name: 'Context7', desc: 'Live library/framework documentation MCP. Agents always get current API references, not stale training data.', url: 'context7.com', link: 'https://context7.com', tag: 'free' },
   ],
+  'Learning & Roadmaps': [
+    { icon: '🗺', name: 'roadmap.sh', desc: 'Interactive developer roadmaps — Frontend, Backend, DevOps, AI Engineer, and 100+ more. See exactly which skills to learn next and track your progress.', url: 'roadmap.sh', link: 'https://roadmap.sh', tag: 'free' },
+    { icon: '🧠', name: 'AI Engineer Roadmap', desc: 'Step-by-step path to becoming an AI engineer — LLMs, RAG, agents, evals, observability, and deployment.', url: 'roadmap.sh/ai-engineer', link: 'https://roadmap.sh/ai-engineer', tag: 'free' },
+    { icon: '👁', name: 'Computer Vision Roadmap', desc: 'From image basics to object detection, segmentation, and CV model deployment. Covers OpenCV, YOLO, and more.', url: 'roadmap.sh/computer-vision', link: 'https://roadmap.sh/computer-vision', tag: 'free' },
+    { icon: '🚀', name: 'DevOps Roadmap', desc: 'CI/CD, Docker, Kubernetes, observability, security scanning, and cloud deployment — the full DevOps journey.', url: 'roadmap.sh/devops', link: 'https://roadmap.sh/devops', tag: 'free' },
+  ],
   'Security': [
     { icon: '🛡', name: 'OWASP MCP Top 10', desc: 'The definitive MCP security risk list. Required reading before shipping any MCP server.', url: 'owasp.org/www-project-mcp-top-10', link: 'https://owasp.org/www-project-mcp-top-10/', tag: 'free' },
     { icon: '🤖', name: 'OWASP Agentic Top 10', desc: 'Top 10 security risks for agentic AI applications. Required for production agent deployments.', url: 'genai.owasp.org', link: 'https://genai.owasp.org', tag: 'free' },
