@@ -127,15 +127,15 @@ export default function BuildDetail({ build: initialBuild }: Props) {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Nav */}
-      <nav className="border-b border-gray-800 px-6 py-3 flex items-center gap-3">
-        <Link href="/builds" className="text-gray-500 hover:text-gray-300 text-sm transition-colors">←</Link>
-        <span className="font-bold text-base tracking-tight">
+      <nav className="border-b border-gray-800 px-4 py-3 flex items-center gap-2 min-h-[48px]">
+        <Link href="/builds" className="text-gray-500 hover:text-gray-300 text-sm transition-colors px-1 min-w-[32px] flex items-center justify-center">←</Link>
+        <span className="font-bold text-base tracking-tight flex-shrink-0">
           build<span className="text-emerald-400">.</span>cc
         </span>
-        <span className="text-gray-600 text-xs font-mono">/ {build.name}</span>
+        <span className="text-gray-600 text-xs font-mono truncate">/ {build.name}</span>
         {build.repo && (
           <a href={`https://github.com/${build.repo}`} target="_blank" rel="noopener noreferrer"
-            className="text-[10px] font-mono text-gray-600 hover:text-gray-400 transition-colors">
+            className="hidden sm:block text-[10px] font-mono text-gray-600 hover:text-gray-400 transition-colors flex-shrink-0 ml-auto">
             {build.repo} ↗
           </a>
         )}
@@ -144,15 +144,15 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       <div className="max-w-3xl mx-auto px-6 py-6">
         {/* Build header */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
-          <div className="grid grid-cols-5 gap-2 mb-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3">
             {[
-              { label: 'frontend', value: `${FE_SECTIONS.flatMap(s=>s.items).filter(i=>{const s=FE_SECTIONS.find(sec=>sec.items.includes(i))!;const st=getItemState(build,s.id,i.id);return st==='auto'||st==='manual'}).length}/${FE_SECTIONS.flatMap(s=>s.items).length}`, color: 'text-violet-400' },
-              { label: 'backend', value: `${BE_SECTIONS.flatMap(s=>s.items).filter(i=>{const s=BE_SECTIONS.find(sec=>sec.items.includes(i))!;const st=getItemState(build,s.id,i.id);return st==='auto'||st==='manual'}).length}/${BE_SECTIONS.flatMap(s=>s.items).length}`, color: 'text-blue-400' },
-              { label: 'overall', value: `${pct}%`, color: 'text-amber-400' },
-              { label: 'auto-verified', value: String(autoDone), color: 'text-emerald-400' },
-              { label: 'need review', value: String(reviewCount), color: 'text-amber-500' },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="bg-gray-800 rounded-lg p-2 text-center">
+              { label: 'frontend', value: `${FE_SECTIONS.flatMap(s=>s.items).filter(i=>{const s=FE_SECTIONS.find(sec=>sec.items.includes(i))!;const st=getItemState(build,s.id,i.id);return st==='auto'||st==='manual'}).length}/${FE_SECTIONS.flatMap(s=>s.items).length}`, color: 'text-violet-400', mobileHide: false },
+              { label: 'backend', value: `${BE_SECTIONS.flatMap(s=>s.items).filter(i=>{const s=BE_SECTIONS.find(sec=>sec.items.includes(i))!;const st=getItemState(build,s.id,i.id);return st==='auto'||st==='manual'}).length}/${BE_SECTIONS.flatMap(s=>s.items).length}`, color: 'text-blue-400', mobileHide: false },
+              { label: 'overall', value: `${pct}%`, color: 'text-amber-400', mobileHide: false },
+              { label: 'auto-verified', value: String(autoDone), color: 'text-emerald-400', mobileHide: true },
+              { label: 'need review', value: String(reviewCount), color: 'text-amber-500', mobileHide: true },
+            ].map(({ label, value, color, mobileHide }) => (
+              <div key={label} className={`bg-gray-800 rounded-lg p-2 text-center ${mobileHide ? 'hidden sm:block' : ''}`}>
                 <div className={`text-sm font-semibold font-mono ${color}`}>{value}</div>
                 <div className="text-[9px] font-mono text-gray-600 mt-0.5">{label}</div>
               </div>
@@ -201,12 +201,12 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-gray-800 mb-4">
+        <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto scrollbar-none">
           {(['checklist', 'github', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`text-xs font-mono px-4 py-2 border-b-2 transition-colors ${
+              className={`text-xs font-mono px-3 sm:px-4 py-3 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 min-h-[44px] ${
                 tab === t
                   ? 'border-white text-white'
                   : 'border-transparent text-gray-500 hover:text-gray-300'

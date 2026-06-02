@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#030712"/>
+  <text x="26" y="108" font-family="ui-monospace, monospace" font-weight="700" font-size="52" fill="#ffffff">build</text>
+  <circle cx="163" cy="96" r="9" fill="#34d399"/>
+  <text x="26" y="158" font-family="ui-monospace, monospace" font-weight="700" font-size="52" fill="#ffffff">cc</text>
+</svg>

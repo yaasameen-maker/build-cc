@@ -90,17 +90,17 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <nav className="border-b border-gray-800 px-6 py-3 flex items-center gap-3">
-        <span className="font-bold text-base tracking-tight">
+      <nav className="border-b border-gray-800 px-4 py-3 flex items-center gap-3 min-h-[48px]">
+        <span className="font-bold text-base tracking-tight flex-shrink-0">
           build<span className="text-emerald-400">.</span>cc
         </span>
         {user.image && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full ml-auto" />
+          <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full ml-auto flex-shrink-0" />
         )}
-        <span className="text-gray-500 text-xs font-mono">{user.name}</span>
+        <span className="text-gray-500 text-xs font-mono truncate max-w-[100px] hidden sm:block">{user.name}</span>
         <form action="/api/auth/signout" method="POST">
-          <button className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors">sign out</button>
+          <button className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors flex-shrink-0 min-h-[44px] flex items-center">sign out</button>
         </form>
       </nav>
 
