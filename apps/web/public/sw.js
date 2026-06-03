@@ -1,11 +1,14 @@
-const CACHE = 'build-cc-v2'
+const CACHE = 'build-cc-v3'
 
-// Only cache truly static assets — never auth-protected pages
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg',
+  '/offline',
 ]
+
+// API responses to cache with stale-while-revalidate
+const SWR_PREFIXES = ['/api/builds']
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC_ASSETS)))
@@ -13,7 +16,6 @@ self.addEventListener('install', e => {
 })
 
 self.addEventListener('activate', e => {
-  // Delete old caches (including v1 which cached broken auth redirects)
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
@@ -27,15 +29,32 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(e.request.url)
 
-  // Navigation requests (HTML pages) — always network-first so auth redirects work correctly
+  // Navigation — network-first, fallback to /offline if completely disconnected
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match('/auth/signin') || fetch('/auth/signin'))
+      fetch(e.request).catch(() =>
+        caches.match(e.request).then(cached => cached || caches.match('/offline'))
+      )
     )
     return
   }
 
-  // Static assets — cache-first, populate cache on first hit
+  // Build API — stale-while-revalidate: serve cache instantly, update in background
+  if (SWR_PREFIXES.some(p => url.pathname.startsWith(p))) {
+    e.respondWith(
+      caches.open(CACHE).then(async cache => {
+        const cached = await cache.match(e.request)
+        const networkFetch = fetch(e.request).then(res => {
+          if (res.ok) cache.put(e.request, res.clone())
+          return res
+        }).catch(() => null)
+        return cached || (await networkFetch) || new Response('{}', { status: 503 })
+      })
+    )
+    return
+  }
+
+  // Static assets — cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached

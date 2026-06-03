@@ -22,14 +22,14 @@ async def sync_repo(
     owner: str,
     repo: str,
     body: SyncRequest = SyncRequest(),
-    x_github_token: str = Header(..., alias="x-github-token"),
+    x_github_token: Optional[str] = Header(None, alias="x-github-token"),
 ):
     async with httpx.AsyncClient(timeout=20.0) as client:
         # 1. default branch
         try:
             branch = body.branch or await gh.get_default_branch(client, x_github_token, owner, repo)
         except Exception:
-            raise HTTPException(status_code=404, detail="Repo not found or token lacks access")
+            raise HTTPException(status_code=404, detail="Repo not found or is private")
 
         # 2. parallel: file tree + commits + PRs + issues
         tree_task = gh.get_file_tree(client, x_github_token, owner, repo, branch)

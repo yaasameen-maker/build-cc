@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { saveBuild, flushPRQueue } from '@/lib/idb'
 import Link from 'next/link'
 import type { Build, DeployConfig, SyncResponse } from '@/lib/types'
 import { getItemState, EMPTY_DEP } from '@/lib/types'
@@ -13,8 +14,10 @@ import SignalDebug from '@/components/SignalDebug'
 import ResourcesTab from '@/components/ResourcesTab'
 import StackBadges from '@/components/StackBadges'
 import RoadmapCoverage from '@/components/RoadmapCoverage'
+import CreatePRModal from '@/components/CreatePRModal'
+import CodeScanResults from '@/components/CodeScanResults'
 
-type Tab = 'checklist' | 'github' | 'deployment' | 'scripts' | 'resources'
+type Tab = 'checklist' | 'github' | 'scan' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
 type SyncState = 'idle' | 'scanning' | 'done' | 'error'
 
@@ -33,6 +36,57 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       : 'Not scanned — click sync + scan to auto-detect checklist items'
   )
   const [syncProgress, setSyncProgress] = useState(0)
+  const [branches, setBranches] = useState<string[]>([])
+  const [selectedBranch, setSelectedBranch] = useState('')
+  const [expandedPR, setExpandedPR] = useState<number | null>(null)
+  const [prFiles, setPrFiles] = useState<{ filename: string; status: string; additions: number; deletions: number; patch: string | null }[]>([])
+  const [prFilesLoading, setPrFilesLoading] = useState(false)
+  const [showCreatePR, setShowCreatePR] = useState(false)
+
+  useEffect(() => {
+    if (!build.repo) return
+    fetch(`/api/github/branches?repo=${encodeURIComponent(build.repo)}`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) && setBranches(data))
+      .catch(() => {})
+  }, [build.repo])
+
+  // Flush any queued PRs when connectivity is restored
+  useEffect(() => {
+    async function drainQueue() {
+      try {
+        const queued = await flushPRQueue()
+        for (const { value } of queued) {
+          await fetch('/api/github/pulls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(value),
+          }).catch(() => {})
+        }
+        if (queued.length > 0) {
+          setSyncMsg(`${queued.length} queued PR(s) sent`)
+          setSyncState('done')
+          setTimeout(() => setSyncState('idle'), 4000)
+        }
+      } catch { /* IndexedDB not available in all contexts */ }
+    }
+    window.addEventListener('online', drainQueue)
+    return () => window.removeEventListener('online', drainQueue)
+  }, [])
+
+  async function loadPrFiles(prNumber: number) {
+    if (!build.repo) return
+    if (expandedPR === prNumber) { setExpandedPR(null); setPrFiles([]); return }
+    setExpandedPR(prNumber)
+    setPrFiles([])
+    setPrFilesLoading(true)
+    try {
+      const res = await fetch(`/api/github/pr-files?repo=${encodeURIComponent(build.repo)}&pr=${prNumber}`)
+      const data = await res.json()
+      setPrFiles(Array.isArray(data) ? data : [])
+    } catch { setPrFiles([]) }
+    finally { setPrFilesLoading(false) }
+  }
 
   async function patch(data: object) {
     const res = await fetch(`/api/builds/${build.id}`, {
@@ -57,7 +111,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       const res = await fetch(`/api/sync/${owner}/${repo}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ branch: selectedBranch || undefined }),
       })
 
       setSyncProgress(80)
@@ -75,6 +129,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       const lastScan = new Date().toISOString()
       const updated = { ...build, signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }
       setBuild(updated)
+      saveBuild(updated).catch(() => {})
       await patch({ signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan })
 
       setTimeout(() => setSyncState('idle'), 4000)
@@ -179,9 +234,24 @@ export default function BuildDetail({ build: initialBuild }: Props) {
           )}
         </div>
 
-        {/* Sync bar */}
+        {/* Branch selector + sync bar */}
         {build.repo && (
-          <SyncBar state={syncState} message={syncMsg} progress={syncProgress} onSync={fullSync} />
+          <div className="mb-3">
+            {branches.length > 1 && (
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] font-mono text-gray-600">branch</span>
+                <select
+                  value={selectedBranch}
+                  onChange={e => setSelectedBranch(e.target.value)}
+                  className="flex-1 bg-gray-800 border border-gray-700 rounded text-[11px] font-mono text-gray-300 px-2 py-1 focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="">default</option>
+                  {branches.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+            )}
+            <SyncBar state={syncState} message={syncMsg} progress={syncProgress} onSync={fullSync} />
+          </div>
         )}
 
         {/* Legend */}
@@ -202,7 +272,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto scrollbar-none">
-          {(['checklist', 'github', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
+          {(['checklist', 'github', 'scan', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -243,12 +313,74 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         {/* GitHub tab */}
         {tab === 'github' && (
           <>
+            {build.repo && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={() => setShowCreatePR(true)}
+                  className="text-[11px] font-mono px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                >
+                  + create PR
+                </button>
+              </div>
+            )}
             {Object.keys(build.signals ?? {}).length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
                 <StackBadges signals={build.signals ?? {}} variant="full" />
               </div>
             )}
             <RoadmapCoverage signals={build.signals ?? {}} />
+
+            {/* PR diff viewer */}
+            {(build.gh_data?.prs?.length ?? 0) > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
+                <div className="text-[9px] font-mono text-gray-600 uppercase tracking-wider mb-2">pr diff viewer</div>
+                {build.gh_data.prs.map(p => (
+                  <div key={p.number}>
+                    <button
+                      onClick={() => loadPrFiles(p.number)}
+                      className="w-full flex items-center gap-2 py-1.5 border-b border-gray-800 last:border-0 hover:bg-gray-800/50 rounded px-1 transition-colors text-left"
+                    >
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 flex-shrink-0">#{p.number}</span>
+                      <span className="text-[11px] font-mono text-gray-300 truncate flex-1">{p.title}</span>
+                      <span className="text-[9px] font-mono text-gray-600">@{p.user.login}</span>
+                      <span className={`text-[9px] font-mono flex-shrink-0 transition-transform ${expandedPR === p.number ? 'text-emerald-400' : 'text-gray-600'}`}>
+                        {expandedPR === p.number ? '▾' : '▸'}
+                      </span>
+                    </button>
+                    {expandedPR === p.number && (
+                      <div className="mt-2 mb-3 ml-2 space-y-2">
+                        {prFilesLoading && (
+                          <div className="text-[10px] font-mono text-gray-600 py-2">loading files…</div>
+                        )}
+                        {!prFilesLoading && prFiles.length === 0 && (
+                          <div className="text-[10px] font-mono text-gray-600 py-2">no files</div>
+                        )}
+                        {prFiles.map(f => (
+                          <div key={f.filename} className="bg-gray-800 rounded-lg p-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-[9px] font-mono px-1 py-0.5 rounded ${
+                                f.status === 'added' ? 'bg-emerald-900/40 text-emerald-400' :
+                                f.status === 'removed' ? 'bg-red-900/40 text-red-400' :
+                                'bg-amber-900/40 text-amber-400'
+                              }`}>{f.status}</span>
+                              <span className="text-[10px] font-mono text-gray-300 truncate flex-1">{f.filename}</span>
+                              <span className="text-[9px] font-mono text-emerald-500 flex-shrink-0">+{f.additions}</span>
+                              <span className="text-[9px] font-mono text-red-400 flex-shrink-0">-{f.deletions}</span>
+                            </div>
+                            {f.patch && (
+                              <pre className="text-[9px] font-mono text-gray-500 overflow-x-auto max-h-40 whitespace-pre-wrap break-all leading-4">
+                                {f.patch.slice(0, 1200)}{f.patch.length > 1200 ? '\n…' : ''}
+                              </pre>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <SignalDebug
               signals={build.signals ?? {}}
               commits={build.gh_data?.commits ?? []}
@@ -257,6 +389,14 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               lastScan={build.last_scan}
             />
           </>
+        )}
+
+        {/* Scan tab */}
+        {tab === 'scan' && build.repo && (
+          <CodeScanResults repo={build.repo} />
+        )}
+        {tab === 'scan' && !build.repo && (
+          <div className="text-center py-8 text-gray-700 font-mono text-xs">link a repo to use code scan</div>
         )}
 
         {/* Deployment tab */}
@@ -270,6 +410,20 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         {/* Resources tab */}
         {tab === 'resources' && <ResourcesTab />}
       </div>
+
+      {showCreatePR && build.repo && (
+        <CreatePRModal
+          repo={build.repo}
+          branches={branches}
+          defaultBase={selectedBranch || branches.find(b => b === 'main') || branches[0] || 'main'}
+          onClose={() => setShowCreatePR(false)}
+          onCreated={pr => {
+            setSyncMsg(`PR #${pr.number} created — ${pr.url}`)
+            setSyncState('done')
+            setTimeout(() => setSyncState('idle'), 6000)
+          }}
+        />
+      )}
     </div>
   )
 }
