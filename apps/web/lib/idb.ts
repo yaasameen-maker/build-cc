@@ -1,7 +1,9 @@
 const DB_NAME = 'build-cc'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const BUILDS_STORE = 'builds'
 const PR_QUEUE_STORE = 'pr-queue'
+const FILES_STORE = 'files'
+const PR_REVIEWS_STORE = 'pr-reviews'
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -13,6 +15,12 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(PR_QUEUE_STORE)) {
         db.createObjectStore(PR_QUEUE_STORE, { autoIncrement: true })
+      }
+      if (!db.objectStoreNames.contains(FILES_STORE)) {
+        db.createObjectStore(FILES_STORE, { keyPath: 'key' })
+      }
+      if (!db.objectStoreNames.contains(PR_REVIEWS_STORE)) {
+        db.createObjectStore(PR_REVIEWS_STORE, { keyPath: 'key' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -35,6 +43,46 @@ export async function getCachedBuild(id: string): Promise<object | null> {
   return new Promise((resolve, reject) => {
     const req = db.transaction(BUILDS_STORE, 'readonly').objectStore(BUILDS_STORE).get(id)
     req.onsuccess = () => resolve((req.result as object) ?? null)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+// File content cache — keyed by "repo:path"
+export async function saveFile(repo: string, path: string, content: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FILES_STORE, 'readwrite')
+    tx.objectStore(FILES_STORE).put({ key: `${repo}:${path}`, content, cachedAt: new Date().toISOString() })
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getCachedFile(repo: string, path: string): Promise<{ content: string; cachedAt: string } | null> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(FILES_STORE, 'readonly').objectStore(FILES_STORE).get(`${repo}:${path}`)
+    req.onsuccess = () => resolve(req.result ? { content: req.result.content, cachedAt: req.result.cachedAt } : null)
+    req.onerror = () => reject(req.error)
+  })
+}
+
+// PR Agent reviews cache — keyed by "repo:pr"
+export async function savePRReview(repo: string, pr: number, data: object): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(PR_REVIEWS_STORE, 'readwrite')
+    tx.objectStore(PR_REVIEWS_STORE).put({ key: `${repo}:${pr}`, data, cachedAt: new Date().toISOString() })
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getCachedPRReview(repo: string, pr: number): Promise<{ data: object; cachedAt: string } | null> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(PR_REVIEWS_STORE, 'readonly').objectStore(PR_REVIEWS_STORE).get(`${repo}:${pr}`)
+    req.onsuccess = () => resolve(req.result ? { data: req.result.data, cachedAt: req.result.cachedAt } : null)
     req.onerror = () => reject(req.error)
   })
 }
