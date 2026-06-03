@@ -57,11 +57,17 @@ function buildAdapter(): Adapter {
             ${(account.session_state as string | null) ?? null}, ${account.token_type ?? null})`
       } catch (e: any) { console.error(`ERR linkAccount: ${e?.message} code=${e?.code}`); throw e }
     },
-    async createSession({ sessionToken, userId, expires }) {
+    async createSession({ sessionToken, userId }) {
       try {
+        const { cookies } = await import('next/headers')
+        const jar = await cookies()
+        const remember = jar.get('bcc-remember')?.value
+        const expiry = remember === '0'
+          ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         const [row] = await sql`
           INSERT INTO sessions ("sessionToken", "userId", expires)
-          VALUES (${sessionToken}, ${userId}, ${expires}) RETURNING *`
+          VALUES (${sessionToken}, ${userId}, ${expiry}) RETURNING *`
         return row as any
       } catch (e: any) { console.error(`ERR createSession: ${e?.message} code=${e?.code}`); throw e }
     },
