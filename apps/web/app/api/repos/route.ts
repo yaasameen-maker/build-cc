@@ -7,17 +7,31 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const [account] = await sql`
-    SELECT access_token FROM accounts
+    SELECT access_token, scope FROM accounts
     WHERE "userId" = ${session.user.id} AND provider = 'github'`
 
-  if (!account?.access_token) return NextResponse.json([], { status: 200 })
+  if (!account?.access_token) {
+    return NextResponse.json({ error: 'GitHub token not found — reconnect your account' }, { status: 400 })
+  }
+
+  // Adjust affiliation based on the granted OAuth scope.
+  // public_repo scope can only list owned public repos — collaborator affiliation requires repo scope.
+  const grantedScope: string = account.scope ?? ''
+  const hasFullRepoScope = grantedScope.includes('repo') && !grantedScope.startsWith('public_repo')
+  const params = hasFullRepoScope
+    ? 'per_page=100&sort=updated&affiliation=owner,collaborator'
+    : 'per_page=100&sort=updated&affiliation=owner&visibility=public'
 
   const res = await fetch(
-    'https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator',
+    `https://api.github.com/user/repos?${params}`,
     { headers: { Authorization: `Bearer ${account.access_token}`, Accept: 'application/vnd.github+json' } }
   )
 
-  if (!res.ok) return NextResponse.json([], { status: 200 })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    const msg = body.message ?? `GitHub API error ${res.status}`
+    return NextResponse.json({ error: msg }, { status: res.status })
+  }
 
   const repos = await res.json()
   return NextResponse.json(

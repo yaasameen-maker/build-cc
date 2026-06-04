@@ -22,16 +22,21 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
   const [repos, setRepos] = useState<GHRepo[]>([])
   const [repoSearch, setRepoSearch] = useState('')
   const [repoLoading, setRepoLoading] = useState(false)
+  const [repoError, setRepoError] = useState('')
   const [showRepoList, setShowRepoList] = useState(false)
   const repoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!showNew || repos.length > 0) return
     setRepoLoading(true)
+    setRepoError('')
     fetch('/api/repos')
-      .then(r => r.json())
-      .then(data => setRepos(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .then(async r => {
+        const data = await r.json()
+        if (!r.ok) { setRepoError(data.error ?? 'Could not load repos'); return }
+        setRepos(Array.isArray(data) ? data : [])
+      })
+      .catch(() => setRepoError('Could not reach server'))
       .finally(() => setRepoLoading(false))
   }, [showNew, repos.length])
 
@@ -162,6 +167,20 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
               )}
             </div>
 
+            {/* Repo error or empty state */}
+            {repoError && (
+              <p className="text-[10px] font-mono text-red-400 mb-2">{repoError}</p>
+            )}
+            {!repoLoading && !repoError && repos.length === 0 && (
+              <div className="text-[10px] font-mono text-gray-600 mb-2 leading-relaxed">
+                No repos found. If you signed in with public-only access,{' '}
+                <a href="/auth/signin" className="text-emerald-500 hover:text-emerald-400 underline">
+                  re-sign in with all repos
+                </a>{' '}
+                to see private repos too. Or type a repo manually below.
+              </div>
+            )}
+
             {/* Build name */}
             <input
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm font-mono mb-3 placeholder-gray-600 focus:outline-none focus:border-gray-500"
@@ -186,8 +205,14 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
         )}
 
         {builds.length === 0 && !showNew && (
-          <div className="text-center py-16 text-gray-600 font-mono text-sm">
-            no builds yet — create your first one
+          <div className="text-center py-16">
+            <p className="text-gray-600 font-mono text-sm mb-3">no builds yet</p>
+            <button
+              onClick={() => setShowNew(true)}
+              className="text-xs font-mono px-4 py-2 rounded-lg border border-emerald-600 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            >
+              + create your first build
+            </button>
           </div>
         )}
 
