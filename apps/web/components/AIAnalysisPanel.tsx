@@ -22,7 +22,8 @@ export default function AIAnalysisPanel({ issue, snippet }: Props) {
 
   const getWorker = useCallback(() => {
     if (!sharedWorker) {
-      sharedWorker = new Worker(new URL('../lib/ai-worker.ts', import.meta.url), { type: 'module' })
+      // Loaded from /public — not bundled by Next.js, uses importScripts from CDN
+      sharedWorker = new Worker('/ai-worker.js')
     }
     return sharedWorker
   }, [])
