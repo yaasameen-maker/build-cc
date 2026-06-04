@@ -23,6 +23,13 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 px-4">
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 w-full max-w-sm text-center">
+        <Link
+          href="/"
+          className="flex items-center gap-1 text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors mb-5 -mt-1"
+        >
+          ← continue without signing in
+        </Link>
+
         <div className="text-lg font-bold text-white mb-1 tracking-tight">
           build<span className="text-emerald-400">.</span>cc
         </div>
