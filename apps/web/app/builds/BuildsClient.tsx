@@ -10,9 +10,10 @@ interface GHRepo { full_name: string; name: string; private: boolean; descriptio
 interface Props {
   initialBuilds: Build[]
   user: { id: string; name: string; image: string }
+  repoScope: 'repo' | 'public_repo'
 }
 
-export default function BuildsClient({ initialBuilds, user }: Props) {
+export default function BuildsClient({ initialBuilds, user, repoScope }: Props) {
   const [builds, setBuilds] = useState<Build[]>(initialBuilds)
   const [showNew, setShowNew] = useState(false)
   const [name, setName] = useState('')
@@ -34,7 +35,9 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
       .then(async r => {
         const data = await r.json()
         if (!r.ok) { setRepoError(data.error ?? 'Could not load repos'); return }
-        setRepos(Array.isArray(data) ? data : [])
+        // API returns { scope, repos } shape
+        const list = Array.isArray(data) ? data : (data.repos ?? [])
+        setRepos(list)
       })
       .catch(() => setRepoError('Could not reach server'))
       .finally(() => setRepoLoading(false))
@@ -105,6 +108,17 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
           <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full ml-auto flex-shrink-0" />
         )}
         <span className="text-gray-500 text-xs font-mono truncate max-w-[100px] hidden sm:block">{user.name}</span>
+        <Link
+          href="/auth/signin"
+          title={repoScope === 'public_repo' ? 'Public repos only — click to change' : 'All repos — click to change'}
+          className={`text-[9px] font-mono px-1.5 py-0.5 rounded border hidden sm:block flex-shrink-0 transition-colors ${
+            repoScope === 'public_repo'
+              ? 'border-gray-700 text-gray-500 hover:text-gray-300'
+              : 'border-emerald-800/50 text-emerald-600 hover:text-emerald-400'
+          }`}
+        >
+          {repoScope === 'public_repo' ? 'public' : 'all repos'}
+        </Link>
         <form action={handleSignOut}>
           <button type="submit" className="text-gray-600 hover:text-gray-400 text-xs font-mono transition-colors flex-shrink-0 min-h-[44px] flex items-center">sign out</button>
         </form>
@@ -172,12 +186,18 @@ export default function BuildsClient({ initialBuilds, user }: Props) {
               <p className="text-[10px] font-mono text-red-400 mb-2">{repoError}</p>
             )}
             {!repoLoading && !repoError && repos.length === 0 && (
-              <div className="text-[10px] font-mono text-gray-600 mb-2 leading-relaxed">
-                No repos found. If you signed in with public-only access,{' '}
-                <a href="/auth/signin" className="text-emerald-500 hover:text-emerald-400 underline">
-                  re-sign in with all repos
-                </a>{' '}
-                to see private repos too. Or type a repo manually below.
+              <div className="text-[10px] font-mono mb-2 leading-relaxed">
+                {repoScope === 'public_repo' ? (
+                  <span className="text-amber-500">
+                    No public repos found. You&apos;re on <strong>public-only</strong> access.{' '}
+                    <a href="/auth/signin" className="underline hover:text-amber-400">Sign in with all repos</a>{' '}
+                    to see private repos. Or type a repo slug manually (owner/repo).
+                  </span>
+                ) : (
+                  <span className="text-gray-600">
+                    No repos found. Check your GitHub connection or type a repo slug manually (owner/repo).
+                  </span>
+                )}
               </div>
             )}
 

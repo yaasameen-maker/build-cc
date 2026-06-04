@@ -68,6 +68,18 @@ export default function SignInPage() {
             Sign in — public only
           </button>
           <p className="text-gray-600 text-[10px] font-mono mt-1.5">hides private repos · <code className="text-gray-500">public_repo</code> scope</p>
+          <p className="text-gray-700 text-[9px] font-mono mt-1 leading-relaxed">
+            Previously used all-repos access? First{' '}
+            <a
+              href="https://github.com/settings/applications"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-gray-500"
+            >
+              revoke this app in GitHub settings
+            </a>
+            , then sign in here.
+          </p>
 
           {/* Remember me — single checkbox, applies to whichever button is clicked */}
           <label className="flex items-center justify-center gap-2 mt-5 cursor-pointer group">

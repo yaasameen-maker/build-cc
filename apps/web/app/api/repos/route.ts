@@ -14,10 +14,9 @@ export async function GET() {
     return NextResponse.json({ error: 'GitHub token not found — reconnect your account' }, { status: 400 })
   }
 
-  // Adjust affiliation based on the granted OAuth scope.
-  // public_repo scope can only list owned public repos — collaborator affiliation requires repo scope.
-  const grantedScope: string = account.scope ?? ''
-  const hasFullRepoScope = grantedScope.includes('repo') && !grantedScope.startsWith('public_repo')
+  // Parse scopes robustly — GitHub returns them as "public_repo, read:user, user:email"
+  const scopes = (account.scope ?? '').split(/[\s,]+/).filter(Boolean)
+  const hasFullRepoScope = scopes.includes('repo')
   const params = hasFullRepoScope
     ? 'per_page=100&sort=updated&affiliation=owner,collaborator'
     : 'per_page=100&sort=updated&affiliation=owner&visibility=public'
@@ -34,14 +33,15 @@ export async function GET() {
   }
 
   const repos = await res.json()
-  return NextResponse.json(
+  return NextResponse.json({
+    scope: hasFullRepoScope ? 'repo' : 'public_repo',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    repos.map((r: any) => ({
+    repos: repos.map((r: any) => ({
       full_name: r.full_name,
       name: r.name,
       private: r.private,
       description: r.description,
       updated_at: r.updated_at,
-    }))
-  )
+    })),
+  })
 }
