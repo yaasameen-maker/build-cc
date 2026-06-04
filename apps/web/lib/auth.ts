@@ -54,7 +54,14 @@ function buildAdapter(): Adapter {
             ${account.providerAccountId}, ${account.refresh_token ?? null},
             ${account.access_token ?? null}, ${account.expires_at ?? null},
             ${account.id_token ?? null}, ${account.scope ?? null},
-            ${(account.session_state as string | null) ?? null}, ${account.token_type ?? null})`
+            ${(account.session_state as string | null) ?? null}, ${account.token_type ?? null})
+          ON CONFLICT ("userId", provider, "providerAccountId")
+          DO UPDATE SET
+            access_token  = EXCLUDED.access_token,
+            refresh_token = EXCLUDED.refresh_token,
+            expires_at    = EXCLUDED.expires_at,
+            scope         = EXCLUDED.scope,
+            token_type    = EXCLUDED.token_type`
       } catch (e: any) { console.error(`ERR linkAccount: ${e?.message} code=${e?.code}`); throw e }
     },
     async createSession({ sessionToken, userId }) {

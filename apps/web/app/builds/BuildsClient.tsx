@@ -35,9 +35,7 @@ export default function BuildsClient({ initialBuilds, user, repoScope }: Props) 
       .then(async r => {
         const data = await r.json()
         if (!r.ok) { setRepoError(data.error ?? 'Could not load repos'); return }
-        // API returns { scope, repos } shape
-        const list = Array.isArray(data) ? data : (data.repos ?? [])
-        setRepos(list)
+        setRepos(Array.isArray(data) ? data : [])
       })
       .catch(() => setRepoError('Could not reach server'))
       .finally(() => setRepoLoading(false))
