@@ -388,6 +388,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               prs={build.gh_data?.prs ?? []}
               issues={build.gh_data?.issues ?? []}
               lastScan={build.last_scan}
+              repo={build.repo}
             />
           </>
         )}

@@ -169,7 +169,7 @@ export default function ChecklistSection({ section, build, onToggle }: Props) {
             const state = getItemState(build, section.id, item.id)
             const done = state === 'auto' || state === 'manual'
             const clickable = state !== 'auto'
-            const signalKey = item.auto || item.autoSignal ? (item.auto ?? '') : ''
+            const signalKey = item.auto ?? item.autoWarn ?? ''
             const hasFix = !done && signalKey && SIGNAL_FIXES[signalKey]
             const fixId = `${section.id}:${item.id}`
             const fixOpen = expandedFix === fixId

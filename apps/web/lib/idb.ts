@@ -1,9 +1,10 @@
 const DB_NAME = 'build-cc'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const BUILDS_STORE = 'builds'
 const PR_QUEUE_STORE = 'pr-queue'
 const FILES_STORE = 'files'
 const PR_REVIEWS_STORE = 'pr-reviews'
+const COMMITS_STORE = 'commits'
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -21,6 +22,9 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(PR_REVIEWS_STORE)) {
         db.createObjectStore(PR_REVIEWS_STORE, { keyPath: 'key' })
+      }
+      if (!db.objectStoreNames.contains(COMMITS_STORE)) {
+        db.createObjectStore(COMMITS_STORE, { keyPath: 'key' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -103,6 +107,26 @@ export async function enqueuePR(payload: QueuedPR): Promise<void> {
     tx.objectStore(PR_QUEUE_STORE).add(payload)
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
+  })
+}
+
+// Commit diff cache — keyed by "repo:sha"
+export async function saveCommit(repo: string, sha: string, data: object): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(COMMITS_STORE, 'readwrite')
+    tx.objectStore(COMMITS_STORE).put({ key: `${repo}:${sha}`, data, cachedAt: new Date().toISOString() })
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getCachedCommit(repo: string, sha: string): Promise<{ data: object; cachedAt: string } | null> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(COMMITS_STORE, 'readonly').objectStore(COMMITS_STORE).get(`${repo}:${sha}`)
+    req.onsuccess = () => resolve(req.result ? { data: req.result.data, cachedAt: req.result.cachedAt } : null)
+    req.onerror = () => reject(req.error)
   })
 }
 
