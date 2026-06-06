@@ -5,6 +5,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
-    "build": "echo 'frontend built separately via Vercel'"
+    "build": "echo 'frontend built separately via Vercel'",
+    "roadmap:validate": "tsx scripts/validate-roadmap.ts"
   }
 }

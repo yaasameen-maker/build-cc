@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 interface Props {
   state: 'idle' | 'scanning' | 'done' | 'error'
   message: string
@@ -8,6 +10,15 @@ interface Props {
 }
 
 export default function SyncBar({ state, message, progress, onSync }: Props) {
+  useEffect(() => {
+    async function handleOnline() {
+      await fetch('/api/sync/process', { method: 'POST' })
+      onSync()
+    }
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [onSync])
+
   const dotColor =
     state === 'scanning' ? 'bg-amber-500 animate-pulse' :
     state === 'done' ? 'bg-emerald-500' :
