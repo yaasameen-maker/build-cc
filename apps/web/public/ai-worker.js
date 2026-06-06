@@ -17,10 +17,15 @@ self.addEventListener('message', async (e) => {
       self.postMessage({ type: 'progress', id, progress: 0 })
       generator = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-77M', {
         progress_callback: (p) => {
-          self.postMessage({ type: 'progress', id, progress: Math.round(p.progress ?? 0) })
+          if (p.status === 'downloading') {
+            const pct = p.total ? Math.round((p.loaded / p.total) * 100) : 0
+            self.postMessage({ type: 'download-progress', id, file: p.file ?? '', loaded: p.loaded, total: p.total, pct })
+          } else {
+            self.postMessage({ type: 'progress', id, progress: Math.round(p.progress ?? 0) })
+          }
         },
       })
-      self.postMessage({ type: 'loaded', id })
+      self.postMessage({ type: 'loaded', id, cached: true })
     } catch (err) {
       self.postMessage({ type: 'error', id, message: String(err) })
     }

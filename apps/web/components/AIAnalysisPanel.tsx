@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { canEnableOfflineAI } from '@/lib/device-capability'
+import { hasModelCache } from '@/lib/model-cache'
 
 interface Props {
   issue: string
@@ -16,9 +18,15 @@ let modelReady = false
 export default function AIAnalysisPanel({ issue, snippet }: Props) {
   const [state, setState] = useState<AIState>(modelReady ? 'ready' : 'idle')
   const [progress, setProgress] = useState(0)
+  const [currentFile, setCurrentFile] = useState('')
+  const [modelCached, setModelCached] = useState(false)
   const [suggestion, setSuggestion] = useState('')
   const [error, setError] = useState('')
   const idRef = useRef(0)
+
+  useEffect(() => {
+    hasModelCache().then(setModelCached)
+  }, [])
 
   const getWorker = useCallback(() => {
     if (!sharedWorker) {
@@ -35,10 +43,11 @@ export default function AIAnalysisPanel({ issue, snippet }: Props) {
     const id = ++idRef.current
 
     worker.onmessage = (e: MessageEvent) => {
-      if (e.data.id !== id && e.data.type !== 'progress') return
+      if (e.data.id !== id && e.data.type !== 'progress' && e.data.type !== 'download-progress') return
       const { type, progress: p, message } = e.data
+      if (type === 'download-progress') { setCurrentFile(e.data.file ?? ''); setProgress(e.data.pct ?? 0); return }
       if (type === 'progress') { setProgress(p ?? 0); return }
-      if (type === 'loaded') { modelReady = true; setState('ready'); return }
+      if (type === 'loaded') { modelReady = true; setModelCached(Boolean(e.data.cached)); setState('ready'); return }
       if (type === 'error') { setError(message); setState('error') }
     }
 
@@ -62,19 +71,30 @@ export default function AIAnalysisPanel({ issue, snippet }: Props) {
     worker.postMessage({ type: 'analyze', id, payload: { issue, snippet: snippet.slice(0, 400) } })
   }
 
-  if (state === 'idle') return (
-    <div className="mt-2 pt-2 border-t border-gray-700">
-      <p className="text-[9px] font-mono text-gray-600 mb-1.5">
-        AI suggestions — downloads a ~80MB model once, then works offline
-      </p>
-      <button
-        onClick={loadModel}
-        className="text-[9px] font-mono px-2.5 py-1 rounded border border-violet-700 text-violet-400 hover:bg-violet-500/10 transition-colors"
-      >
-        ⬇ enable AI analysis
-      </button>
-    </div>
-  )
+  if (state === 'idle') {
+    const capable = canEnableOfflineAI()
+    return (
+      <div className="mt-2 pt-2 border-t border-gray-700">
+        <p className="text-[9px] font-mono text-gray-600 mb-1.5">
+          {modelCached
+            ? 'AI analysis — model cached, lightweight offline mode available'
+            : 'AI analysis — downloads once, then supports lightweight offline tasks'}
+        </p>
+        {capable ? (
+          <button
+            onClick={loadModel}
+            className="text-[9px] font-mono px-2.5 py-1 rounded border border-violet-700 text-violet-400 hover:bg-violet-500/10 transition-colors"
+          >
+            {modelCached ? '✦ load cached model' : '⬇ enable AI analysis'}
+          </button>
+        ) : (
+          <p className="text-[9px] font-mono text-gray-700">
+            not available on this device or connection
+          </p>
+        )}
+      </div>
+    )
+  }
 
   if (state === 'loading-model') return (
     <div className="mt-2 pt-2 border-t border-gray-700">
@@ -86,7 +106,11 @@ export default function AIAnalysisPanel({ issue, snippet }: Props) {
           {progress > 0 ? `${progress}%` : 'starting…'}
         </span>
       </div>
-      <p className="text-[9px] font-mono text-gray-700 mt-1">downloading model — cached after this</p>
+      {currentFile ? (
+        <p className="text-[9px] font-mono text-gray-700 mt-1 truncate">{currentFile}</p>
+      ) : (
+        <p className="text-[9px] font-mono text-gray-700 mt-1">downloading model — cached after this</p>
+      )}
     </div>
   )
 

@@ -1,4 +1,10 @@
-const CACHE = 'build-cc-v3'
+const CACHE = 'build-cc-v5'
+const MODEL_CACHE = 'model-cache-v1'
+
+const MODEL_PREFIXES = [
+  'https://cdn.jsdelivr.net/npm/@xenova/transformers',
+  'https://huggingface.co/Xenova',
+]
 
 const STATIC_ASSETS = [
   '/manifest.json',
@@ -18,7 +24,9 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys.filter(k => k !== CACHE && k !== MODEL_CACHE).map(k => caches.delete(k))
+      )
     )
   )
   self.clients.claim()
@@ -28,6 +36,20 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return
 
   const url = new URL(e.request.url)
+
+  // Model files — cache-first in a dedicated cache so they survive app cache bumps
+  if (MODEL_PREFIXES.some(p => e.request.url.startsWith(p))) {
+    e.respondWith(
+      caches.open(MODEL_CACHE).then(async cache => {
+        const cached = await cache.match(e.request)
+        if (cached) return cached
+        const res = await fetch(e.request)
+        if (res.ok) await cache.put(e.request, res.clone())
+        return res
+      })
+    )
+    return
+  }
 
   // Navigation — network-first, fallback to /offline if completely disconnected
   if (e.request.mode === 'navigate') {
