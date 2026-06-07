@@ -309,6 +309,14 @@ export default function BuildDetail({ build: initialBuild }: Props) {
             {sections.map(sec => (
               <ChecklistSection key={sec.id} section={sec} build={build} onToggle={toggleItem} />
             ))}
+            <SignalDebug
+              signals={build.signals ?? {}}
+              commits={build.gh_data?.commits ?? []}
+              prs={build.gh_data?.prs ?? []}
+              issues={build.gh_data?.issues ?? []}
+              lastScan={build.last_scan}
+              repo={build.repo}
+            />
           </>
         )}
 
@@ -383,14 +391,6 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               </div>
             )}
 
-            <SignalDebug
-              signals={build.signals ?? {}}
-              commits={build.gh_data?.commits ?? []}
-              prs={build.gh_data?.prs ?? []}
-              issues={build.gh_data?.issues ?? []}
-              lastScan={build.last_scan}
-              repo={build.repo}
-            />
           </>
         )}
 
