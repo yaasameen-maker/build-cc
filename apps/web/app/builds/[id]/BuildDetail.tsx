@@ -10,6 +10,8 @@ import ChecklistSection from '@/components/ChecklistSection'
 import SyncBar from '@/components/SyncBar'
 import DeploymentPanel from '@/components/DeploymentPanel'
 import AgentScripts from '@/components/AgentScripts'
+import { QueuedActionsList } from '@/components/scripts/QueuedActionsList'
+import AgentReviewPanel from '@/components/AgentReviewPanel'
 import { toProjectStack } from '@/lib/project-stack'
 import SignalDebug from '@/components/SignalDebug'
 import ResourcesTab from '@/components/ResourcesTab'
@@ -396,7 +398,10 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Scan tab */}
         {tab === 'scan' && build.repo && (
-          <CodeScanResults repo={build.repo} />
+          <>
+            <CodeScanResults repo={build.repo} />
+            <AgentReviewPanel repo={build.repo} userId={String(build.user_id)} />
+          </>
         )}
         {tab === 'scan' && !build.repo && (
           <div className="text-center py-8 text-gray-700 font-mono text-xs">link a repo to use code scan</div>
@@ -413,7 +418,12 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         )}
 
         {/* Scripts tab */}
-        {tab === 'scripts' && <AgentScripts stack={toProjectStack(build.signals ?? {})} />}
+        {tab === 'scripts' && (
+          <>
+            <AgentScripts stack={toProjectStack(build.signals ?? {})} repoFullName={build.repo ?? undefined} />
+            {build.repo && <QueuedActionsList repoFullName={build.repo} />}
+          </>
+        )}
 
         {/* Resources tab */}
         {tab === 'resources' && <ResourcesTab />}

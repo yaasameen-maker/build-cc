@@ -166,7 +166,7 @@ if __name__ == "__main__": main()
   },
 ]
 
-export default function AgentScripts({ stack }: { stack: ProjectStack }) {
+export default function AgentScripts({ stack, repoFullName }: { stack: ProjectStack; repoFullName?: string }) {
   const [view, setView] = useState<ScriptsView>('generator')
 
   function download(name: string, code: string) {
@@ -226,7 +226,7 @@ export default function AgentScripts({ stack }: { stack: ProjectStack }) {
         </div>
       )}
 
-      {view === 'generator' && <ScriptGeneratorPanel stack={stack} />}
+      {view === 'generator' && <ScriptGeneratorPanel stack={stack} repoFullName={repoFullName} />}
     </div>
   )
 }

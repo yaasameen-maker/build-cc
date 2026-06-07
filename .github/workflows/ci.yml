@@ -38,4 +38,3 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pip install pytest pytest-asyncio httpx
       - run: pytest tests -q --tb=short
-        continue-on-error: true
