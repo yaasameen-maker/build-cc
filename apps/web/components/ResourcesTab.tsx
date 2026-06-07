@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { LanguageCatalog } from '@/components/resources/LanguageCatalog'
 
-type TopTab = 'models' | 'by-usecase' | 'resources'
+type TopTab = 'models' | 'by-usecase' | 'resources' | 'languages'
 
 const CATS = ['frontier & reasoning', 'coding', 'speed & high volume', 'open source & self-hosted', 'multimodal (vision + text)', 'specialized & embedding'] as const
 type Cat = typeof CATS[number]
@@ -123,7 +124,7 @@ export default function ResourcesTab() {
     <div className="text-white">
       {/* Top tabs */}
       <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto">
-        {(['models', 'by use case', 'resources'] as const).map(t => {
+        {(['models', 'by use case', 'resources', 'languages'] as const).map(t => {
           const key = t === 'by use case' ? 'by-usecase' : t as TopTab
           return (
             <button
@@ -247,6 +248,12 @@ export default function ResourcesTab() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {topTab === 'languages' && (
+        <div className="pt-2">
+          <LanguageCatalog />
         </div>
       )}
     </div>

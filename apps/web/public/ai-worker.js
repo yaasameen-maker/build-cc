@@ -32,6 +32,20 @@ self.addEventListener('message', async (e) => {
     return
   }
 
+  if (type === 'generate') {
+    if (!generator) { self.postMessage({ type: 'error', id, message: 'Model not loaded' }); return }
+    try {
+      const { prompt, language, stackSummary } = payload
+      const workerPrompt = `Generate a ${language} script for: "${prompt}"\nStack: ${stackSummary}\nScript:`
+      const result = await generator(workerPrompt, { max_new_tokens: 200, do_sample: false })
+      const text = Array.isArray(result) ? result[0].generated_text : String(result)
+      self.postMessage({ type: 'generated', id, text: text.trim() })
+    } catch (err) {
+      self.postMessage({ type: 'error', id, message: String(err) })
+    }
+    return
+  }
+
   if (type === 'analyze') {
     if (!generator) { self.postMessage({ type: 'error', id, message: 'Model not loaded' }); return }
     try {

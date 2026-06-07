@@ -10,6 +10,7 @@ import ChecklistSection from '@/components/ChecklistSection'
 import SyncBar from '@/components/SyncBar'
 import DeploymentPanel from '@/components/DeploymentPanel'
 import AgentScripts from '@/components/AgentScripts'
+import { toProjectStack } from '@/lib/project-stack'
 import SignalDebug from '@/components/SignalDebug'
 import ResourcesTab from '@/components/ResourcesTab'
 import StackBadges from '@/components/StackBadges'
@@ -412,7 +413,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         )}
 
         {/* Scripts tab */}
-        {tab === 'scripts' && <AgentScripts />}
+        {tab === 'scripts' && <AgentScripts stack={toProjectStack(build.signals ?? {})} />}
 
         {/* Resources tab */}
         {tab === 'resources' && <ResourcesTab />}

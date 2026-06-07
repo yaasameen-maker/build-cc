@@ -13,6 +13,7 @@ MODEL_MAP: dict[str, str] = {
     "security-reviewer": "qwen/qwen3-coder:free",
     "planner": "deepseek/deepseek-r1:free",
     "doc-updater": "meta-llama/llama-3.3-70b-instruct:free",
+    "script-generator": "qwen/qwen3-coder:free",
 }
 
 _SYSTEM_PROMPT = """\
@@ -35,7 +36,7 @@ Do not return markdown.\
 """
 
 
-async def run_agent(agent_name: str, prompt: str) -> dict[str, Any]:
+async def run_agent(agent_name: str, prompt: str, system_prompt: str | None = None) -> dict[str, Any]:
     api_key = os.environ.get("OPENROUTER_API_KEY", "")
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY is not set")
@@ -44,7 +45,7 @@ async def run_agent(agent_name: str, prompt: str) -> dict[str, Any]:
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt or _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
         "response_format": {"type": "json_object"},

@@ -1,5 +1,11 @@
 'use client'
 
+import { useState } from 'react'
+import type { ProjectStack } from '@/lib/project-stack'
+import { ScriptGeneratorPanel } from '@/components/scripts/ScriptGeneratorPanel'
+
+type ScriptsView = 'library' | 'generator'
+
 const AGENTS = [
   {
     name: 'morning_briefing_agent.py',
@@ -160,7 +166,9 @@ if __name__ == "__main__": main()
   },
 ]
 
-export default function AgentScripts() {
+export default function AgentScripts({ stack }: { stack: ProjectStack }) {
+  const [view, setView] = useState<ScriptsView>('library')
+
   function download(name: string, code: string) {
     const blob = new Blob([code], { type: 'text/plain' })
     const a = document.createElement('a')
@@ -173,31 +181,52 @@ export default function AgentScripts() {
     navigator.clipboard?.writeText(code)
   }
 
+  const activeClass = 'border-emerald-500 text-emerald-400'
+  const idleClass = 'border-transparent text-gray-500 hover:text-gray-300'
+
   return (
-    <div className="space-y-2">
-      {AGENTS.map(agent => (
-        <div key={agent.name} className="bg-gray-800/40 border border-gray-700 rounded-lg p-3">
-          <div className="text-[11px] font-semibold font-mono text-gray-200 mb-1">{agent.name}</div>
-          <div className="text-[10px] font-mono text-gray-500 mb-3 leading-relaxed">{agent.desc}</div>
-          <div className="flex gap-1.5 items-center flex-wrap">
-            <button
-              onClick={() => download(agent.name, agent.code)}
-              className="text-[10px] font-mono px-2.5 py-1 rounded border border-emerald-600 text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1"
-            >
-              ↓ download
-            </button>
-            <button
-              onClick={() => copy(agent.code)}
-              className="text-[10px] font-mono px-2.5 py-1 rounded border border-gray-600 text-gray-400 hover:bg-gray-700 transition-colors flex items-center gap-1"
-            >
-              ⎘ copy
-            </button>
-            {agent.tags.map(tag => (
-              <span key={tag} className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400">{tag}</span>
-            ))}
-          </div>
+    <div className="space-y-3">
+      <div className="flex gap-0 border-b border-gray-800">
+        {(['library', 'generator'] as const).map(v => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`text-[11px] font-mono px-4 py-2 border-b-2 transition-colors whitespace-nowrap ${view === v ? activeClass : idleClass}`}
+          >
+            {v === 'library' ? 'script library' : 'script generator'}
+          </button>
+        ))}
+      </div>
+
+      {view === 'library' && (
+        <div className="space-y-2">
+          {AGENTS.map(agent => (
+            <div key={agent.name} className="bg-gray-800/40 border border-gray-700 rounded-lg p-3">
+              <div className="text-[11px] font-semibold font-mono text-gray-200 mb-1">{agent.name}</div>
+              <div className="text-[10px] font-mono text-gray-500 mb-3 leading-relaxed">{agent.desc}</div>
+              <div className="flex gap-1.5 items-center flex-wrap">
+                <button
+                  onClick={() => download(agent.name, agent.code)}
+                  className="text-[10px] font-mono px-2.5 py-1 rounded border border-emerald-600 text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1"
+                >
+                  ↓ download
+                </button>
+                <button
+                  onClick={() => copy(agent.code)}
+                  className="text-[10px] font-mono px-2.5 py-1 rounded border border-gray-600 text-gray-400 hover:bg-gray-700 transition-colors flex items-center gap-1"
+                >
+                  ⎘ copy
+                </button>
+                {agent.tags.map(tag => (
+                  <span key={tag} className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400">{tag}</span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {view === 'generator' && <ScriptGeneratorPanel stack={stack} />}
     </div>
   )
 }

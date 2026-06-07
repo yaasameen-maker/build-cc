@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { canEnableOfflineAI } from '@/lib/device-capability'
 import { hasModelCache } from '@/lib/model-cache'
+import { markReady } from '@/lib/offline-ai'
 
 interface Props {
   issue: string
@@ -47,7 +48,7 @@ export default function AIAnalysisPanel({ issue, snippet }: Props) {
       const { type, progress: p, message } = e.data
       if (type === 'download-progress') { setCurrentFile(e.data.file ?? ''); setProgress(e.data.pct ?? 0); return }
       if (type === 'progress') { setProgress(p ?? 0); return }
-      if (type === 'loaded') { modelReady = true; setModelCached(Boolean(e.data.cached)); setState('ready'); return }
+      if (type === 'loaded') { modelReady = true; setModelCached(Boolean(e.data.cached)); markReady(true); setState('ready'); return }
       if (type === 'error') { setError(message); setState('error') }
     }
 
