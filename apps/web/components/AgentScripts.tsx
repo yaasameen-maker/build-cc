@@ -167,7 +167,7 @@ if __name__ == "__main__": main()
 ]
 
 export default function AgentScripts({ stack }: { stack: ProjectStack }) {
-  const [view, setView] = useState<ScriptsView>('library')
+  const [view, setView] = useState<ScriptsView>('generator')
 
   function download(name: string, code: string) {
     const blob = new Blob([code], { type: 'text/plain' })
@@ -187,7 +187,7 @@ export default function AgentScripts({ stack }: { stack: ProjectStack }) {
   return (
     <div className="space-y-3">
       <div className="flex gap-0 border-b border-gray-800">
-        {(['library', 'generator'] as const).map(v => (
+        {(['generator', 'library'] as const).map(v => (
           <button
             key={v}
             onClick={() => setView(v)}
