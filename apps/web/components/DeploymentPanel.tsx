@@ -62,6 +62,17 @@ export default function DeploymentPanel({ dep, onChange }: Props) {
 
   return (
     <div className="mb-4 space-y-2">
+      {/* Deployment log header */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-emerald-400 text-xs">🚀</span>
+          <span className="text-sm font-semibold text-white">Deployment log</span>
+        </div>
+        <p className="text-[11px] font-mono text-gray-500 leading-relaxed">
+          Record your live, staging, and dashboard URLs here. Once saved, you get one-click links to every environment — no bookmarks needed. Pick your platform below and paste in the URLs.
+        </p>
+      </div>
+
       {/* All-in-one */}
       <div className="bg-gray-800/40 border border-gray-700 rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
