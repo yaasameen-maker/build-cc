@@ -19,9 +19,10 @@ import StackBadges from '@/components/StackBadges'
 import RoadmapCoverage from '@/components/RoadmapCoverage'
 import CreatePRModal from '@/components/CreatePRModal'
 import CodeScanResults from '@/components/CodeScanResults'
+import CommitsList from '@/components/CommitsList'
 import ExtensionsTab from '@/components/ExtensionsTab'
 
-type Tab = 'checklist' | 'github' | 'scan' | 'extensions' | 'deployment' | 'scripts' | 'resources'
+type Tab = 'checklist' | 'github-scan' | 'extensions' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
 type SyncState = 'idle' | 'scanning' | 'done' | 'error'
 
@@ -41,7 +42,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
   )
   const [syncProgress, setSyncProgress] = useState(0)
   const [branches, setBranches] = useState<string[]>([])
-  const [selectedBranch, setSelectedBranch] = useState('')
+  const selectedBranch = ''
   const [expandedPR, setExpandedPR] = useState<number | null>(null)
   const [prFiles, setPrFiles] = useState<{ filename: string; status: string; additions: number; deletions: number; patch: string | null }[]>([])
   const [prFilesLoading, setPrFilesLoading] = useState(false)
@@ -241,19 +242,6 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         {/* Branch selector + sync bar */}
         {build.repo && (
           <div className="mb-3">
-            {branches.length > 1 && (
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[10px] font-mono text-gray-600">branch</span>
-                <select
-                  value={selectedBranch}
-                  onChange={e => setSelectedBranch(e.target.value)}
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded text-[11px] font-mono text-gray-300 px-2 py-1 focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="">default</option>
-                  {branches.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-            )}
             <SyncBar state={syncState} message={syncMsg} progress={syncProgress} onSync={fullSync} />
           </div>
         )}
@@ -276,7 +264,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto scrollbar-none">
-          {(['checklist', 'github', 'scan', 'extensions', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
+          {(['checklist', 'github-scan', 'extensions', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -286,7 +274,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
                   : 'border-transparent text-gray-500 hover:text-gray-300'
               }`}
             >
-              {t}
+              {t === 'github-scan' ? 'github scan' : t}
             </button>
           ))}
         </div>
@@ -322,19 +310,20 @@ export default function BuildDetail({ build: initialBuild }: Props) {
           </>
         )}
 
-        {/* GitHub tab */}
-        {tab === 'github' && (
+        {/* GitHub Scan tab */}
+        {tab === 'github-scan' && build.repo && (
           <>
-            {build.repo && (
-              <div className="flex justify-end mb-3">
-                <button
-                  onClick={() => setShowCreatePR(true)}
-                  className="text-[11px] font-mono px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                >
-                  + create PR
-                </button>
-              </div>
-            )}
+            <div className="flex justify-end mb-3">
+              <button
+                onClick={() => setShowCreatePR(true)}
+                className="text-[11px] font-mono px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+              >
+                + create PR
+              </button>
+            </div>
+
+            <CommitsList commits={build.gh_data?.commits ?? []} />
+
             {Object.keys(build.signals ?? {}).length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
                 <StackBadges signals={build.signals ?? {}} variant="full" />
@@ -342,7 +331,6 @@ export default function BuildDetail({ build: initialBuild }: Props) {
             )}
             <RoadmapCoverage signals={build.signals ?? {}} />
 
-            {/* PR diff viewer */}
             {(build.gh_data?.prs?.length ?? 0) > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
                 <div className="text-[9px] font-mono text-gray-600 uppercase tracking-wider mb-2">pr diff viewer</div>
@@ -393,18 +381,12 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               </div>
             )}
 
-          </>
-        )}
-
-        {/* Scan tab */}
-        {tab === 'scan' && build.repo && (
-          <>
             <CodeScanResults repo={build.repo} />
             <AgentReviewPanel repo={build.repo} userId={String(build.user_id)} />
           </>
         )}
-        {tab === 'scan' && !build.repo && (
-          <div className="text-center py-8 text-gray-700 font-mono text-xs">link a repo to use code scan</div>
+        {tab === 'github-scan' && !build.repo && (
+          <div className="text-center py-8 text-gray-700 font-mono text-xs">link a repo to use github scan</div>
         )}
 
         {/* Extensions tab */}
