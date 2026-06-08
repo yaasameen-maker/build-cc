@@ -1,20 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { LANGUAGES } from '@/lib/languages'
 import { generateTemplateDraft } from '@/lib/script-templates'
 import { formatStackContext, type ProjectStack } from '@/lib/project-stack'
 import { getAIWorker, useOfflineAIReady } from '@/lib/offline-ai'
 import { copyToClipboard, downloadTextFile } from '@/lib/downloads'
 import { enqueueSyncItem } from '@/lib/sync-queue'
-import { features } from '@/lib/features'
 
-type Props = { stack: ProjectStack; repoFullName?: string }
+type Props = { stack: ProjectStack; repoFullName?: string; onScriptSaved?: () => void }
 
 type GenerationResult = { filename: string; content: string; notes: string[] }
-type SavedScript = { id: string; language_id: string; filename_suggestion: string | null; prompt: string; mode: string; created_at: string }
 
-export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
+export function ScriptGeneratorPanel({ stack, repoFullName, onScriptSaved }: Props) {
   const [languageId, setLanguageId] = useState('python')
   const [prompt, setPrompt] = useState('')
   const [mode, setMode] = useState<'offline' | 'online'>('offline')
@@ -24,7 +22,6 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
   const [saved, setSaved] = useState(false)
   const [queueing, setQueueing] = useState(false)
   const [queued, setQueued] = useState(false)
-  const [savedScripts, setSavedScripts] = useState<SavedScript[]>([])
 
   const offlineReady = useOfflineAIReady()
 
@@ -32,14 +29,6 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
     () => LANGUAGES.find(x => x.id === languageId) ?? LANGUAGES[0],
     [languageId]
   )
-
-  useEffect(() => {
-    const params = repoFullName ? `?repo=${encodeURIComponent(repoFullName)}` : ''
-    fetch(`/api/generated-scripts${params}`)
-      .then(r => r.ok ? r.json() : [])
-      .then(setSavedScripts)
-      .catch(() => {})
-  }, [repoFullName])
 
   async function onGenerate() {
     if (!prompt.trim()) return
@@ -109,9 +98,8 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
         }),
       })
       if (res.ok) {
-        const row = await res.json()
         setSaved(true)
-        setSavedScripts(prev => [{ id: row.id, language_id: language.id, filename_suggestion: result.filename, prompt, mode, created_at: row.created_at }, ...prev])
+        onScriptSaved?.()
       }
     } finally {
       setSaving(false)
@@ -218,7 +206,7 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
               >
                 {saved ? '✓ saved' : saving ? 'saving…' : '⊕ save'}
               </button>
-              {features.prWrite && repoFullName && (
+              {repoFullName && (
                 <button
                   onClick={onQueuePR}
                   disabled={queueing || queued}
@@ -237,19 +225,6 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
               ))}
             </ul>
           )}
-        </div>
-      )}
-
-      {savedScripts.length > 0 && (
-        <div className="space-y-1">
-          <div className="text-[9px] font-mono text-gray-600 uppercase tracking-wider pt-1">saved scripts</div>
-          {savedScripts.map(s => (
-            <div key={s.id} className="flex items-center gap-2 px-2 py-1.5 rounded border border-gray-800 bg-gray-900/30">
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-gray-800 text-gray-500">{s.language_id}</span>
-              <span className="text-[10px] font-mono text-gray-400 truncate flex-1">{s.filename_suggestion ?? s.prompt.slice(0, 40)}</span>
-              <span className="text-[9px] font-mono text-gray-700 flex-shrink-0">{s.mode}</span>
-            </div>
-          ))}
         </div>
       )}
     </div>
