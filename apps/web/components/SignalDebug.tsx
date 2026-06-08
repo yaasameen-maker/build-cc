@@ -2,7 +2,6 @@
 
 import type { SignalMap } from '@/lib/types'
 import type { GHCommit, GHPR, GHIssue } from '@/lib/types'
-import InteractiveCommitsList from '@/components/InteractiveCommitsList'
 
 const SIGNAL_LABELS: Record<string, string> = {
   has_package_json: 'package.json',
@@ -53,14 +52,12 @@ interface Props {
   repo?: string | null
 }
 
-export default function SignalDebug({ signals, commits, prs, issues, lastScan, repo }: Props) {
+export default function SignalDebug({ signals, commits: _commits, prs, issues, lastScan, repo: _repo }: Props) {
   const detected = Object.values(signals).filter(Boolean).length
   const total = Object.keys(SIGNAL_LABELS).length
 
   return (
     <div className="space-y-4">
-      <InteractiveCommitsList commits={commits} repo={repo} />
-
       {/* PRs */}
       {prs.length > 0 && (
         <div>
@@ -112,7 +109,7 @@ export default function SignalDebug({ signals, commits, prs, issues, lastScan, r
         </div>
       )}
 
-      {!lastScan && commits.length === 0 && (
+      {!lastScan && _commits.length === 0 && (
         <div className="text-center py-8 text-gray-700 font-mono text-xs">
           click sync + scan to fetch activity
         </div>
