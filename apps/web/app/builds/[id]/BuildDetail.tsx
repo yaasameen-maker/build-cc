@@ -20,9 +20,7 @@ import RoadmapCoverage from '@/components/RoadmapCoverage'
 import CreatePRModal from '@/components/CreatePRModal'
 import CodeScanResults from '@/components/CodeScanResults'
 import InteractiveCommitsList from '@/components/InteractiveCommitsList'
-import ExtensionsTab from '@/components/ExtensionsTab'
-
-type Tab = 'checklist' | 'github-scan' | 'extensions' | 'deployment' | 'scripts' | 'resources'
+type Tab = 'checklist' | 'github-scan' | 'deployment' | 'scripts' | 'resources'
 type CLView = 'fe' | 'be'
 type SyncState = 'idle' | 'scanning' | 'done' | 'error'
 
@@ -264,7 +262,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
 
         {/* Tabs */}
         <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto scrollbar-none">
-          {(['checklist', 'github-scan', 'extensions', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
+          {(['checklist', 'github-scan', 'deployment', 'scripts', 'resources'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -390,10 +388,6 @@ export default function BuildDetail({ build: initialBuild }: Props) {
           <div className="text-center py-8 text-gray-700 font-mono text-xs">link a repo to use github scan</div>
         )}
 
-        {/* Extensions tab */}
-        {tab === 'extensions' && (
-          <ExtensionsTab repo={build.repo} prs={build.gh_data?.prs ?? []} />
-        )}
 
         {/* Deployment tab */}
         {tab === 'deployment' && (
@@ -409,7 +403,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         )}
 
         {/* Resources tab */}
-        {tab === 'resources' && <ResourcesTab />}
+        {tab === 'resources' && <ResourcesTab repo={build.repo} prs={build.gh_data?.prs ?? []} />}
       </div>
 
       {showCreatePR && build.repo && (

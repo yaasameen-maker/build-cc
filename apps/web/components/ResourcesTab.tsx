@@ -2,8 +2,15 @@
 
 import { useState } from 'react'
 import { LanguageCatalog } from '@/components/resources/LanguageCatalog'
+import ExtensionsTab from '@/components/ExtensionsTab'
+import type { GHPR } from '@/lib/types'
 
-type TopTab = 'models' | 'by-usecase' | 'resources' | 'languages'
+type TopTab = 'models' | 'by-usecase' | 'resources' | 'languages' | 'extensions'
+
+interface Props {
+  repo?: string | null
+  prs?: GHPR[]
+}
 
 const CATS = ['frontier & reasoning', 'coding', 'speed & high volume', 'open source & self-hosted', 'multimodal (vision + text)', 'specialized & embedding'] as const
 type Cat = typeof CATS[number]
@@ -114,7 +121,7 @@ const TAG_STYLES: Record<string, string> = {
   oss: 'bg-gray-700 text-gray-400',
 }
 
-export default function ResourcesTab() {
+export default function ResourcesTab({ repo, prs }: Props = {}) {
   const [topTab, setTopTab] = useState<TopTab>('models')
   const [activeCat, setActiveCat] = useState<Cat>('frontier & reasoning')
 
@@ -124,7 +131,7 @@ export default function ResourcesTab() {
     <div className="text-white">
       {/* Top tabs */}
       <div className="flex gap-0 border-b border-gray-800 mb-4 overflow-x-auto">
-        {(['models', 'by use case', 'resources', 'languages'] as const).map(t => {
+        {(['models', 'by use case', 'resources', 'languages', 'extensions'] as const).map(t => {
           const key = t === 'by use case' ? 'by-usecase' : t as TopTab
           return (
             <button
@@ -254,6 +261,12 @@ export default function ResourcesTab() {
       {topTab === 'languages' && (
         <div className="pt-2">
           <LanguageCatalog />
+        </div>
+      )}
+
+      {topTab === 'extensions' && (
+        <div className="pt-2">
+          <ExtensionsTab repo={repo ?? null} prs={prs ?? []} />
         </div>
       )}
     </div>
