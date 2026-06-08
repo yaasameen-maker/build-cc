@@ -134,7 +134,7 @@ export default function RoadmapCoverage({ signals }: Props) {
                   href={roadmap.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[9px] font-mono text-gray-600 hover:text-emerald-400 transition-colors"
+                  className="text-xs font-mono text-gray-400 hover:text-emerald-400 transition-colors"
                 >
                   view ↗
                 </a>
