@@ -45,6 +45,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
   const [prFiles, setPrFiles] = useState<{ filename: string; status: string; additions: number; deletions: number; patch: string | null }[]>([])
   const [prFilesLoading, setPrFilesLoading] = useState(false)
   const [showCreatePR, setShowCreatePR] = useState(false)
+  const [queueRefreshKey, setQueueRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!build.repo) return
@@ -53,6 +54,17 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       .then(data => Array.isArray(data) && setBranches(data))
       .catch(() => {})
   }, [build.repo])
+
+  // Drain server-side sync_queue on mount and when connectivity is restored
+  useEffect(() => {
+    async function drain() {
+      await fetch('/api/sync/process', { method: 'POST' }).catch(() => {})
+      setQueueRefreshKey(k => k + 1)
+    }
+    if (navigator.onLine) drain()
+    window.addEventListener('online', drain)
+    return () => window.removeEventListener('online', drain)
+  }, [])
 
   // Flush any queued PRs when connectivity is restored
   useEffect(() => {
@@ -442,7 +454,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
         {tab === 'scripts' && (
           <>
             <AgentScripts stack={toProjectStack(build.signals ?? {})} repoFullName={build.repo ?? undefined} />
-            {build.repo && <QueuedActionsList repoFullName={build.repo} />}
+            {build.repo && <QueuedActionsList key={queueRefreshKey} repoFullName={build.repo} />}
           </>
         )}
 
