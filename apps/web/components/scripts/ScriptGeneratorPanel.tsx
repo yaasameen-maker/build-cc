@@ -179,6 +179,21 @@ export function ScriptGeneratorPanel({ stack, repoFullName }: Props) {
         onChange={e => setPrompt(e.target.value)}
       />
 
+      <div className="rounded border border-gray-800 bg-gray-900/30 px-3 py-2.5 space-y-1.5">
+        <div className="text-[9px] font-mono text-gray-600 uppercase tracking-wider mb-1">prompt guide</div>
+        {([
+          { label: 'Role & Goal', desc: 'State what the script is or who the AI is mimicking.' },
+          { label: 'Inputs', desc: 'Define what data enters the system.' },
+          { label: 'Process', desc: 'List the step-by-step logic sequentially.' },
+          { label: 'Outputs & Constraints', desc: 'Specify what the final result should look like.' },
+        ] as const).map(({ label, desc }) => (
+          <div key={label} className="flex gap-2 text-[10px] font-mono">
+            <span className="text-gray-400 font-semibold flex-shrink-0">{label}:</span>
+            <span className="text-gray-600">{desc}</span>
+          </div>
+        ))}
+      </div>
+
       {result && (
         <div className="rounded border border-gray-700 bg-gray-900/50">
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700">
