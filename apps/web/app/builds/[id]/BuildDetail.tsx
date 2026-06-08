@@ -19,7 +19,7 @@ import StackBadges from '@/components/StackBadges'
 import RoadmapCoverage from '@/components/RoadmapCoverage'
 import CreatePRModal from '@/components/CreatePRModal'
 import CodeScanResults from '@/components/CodeScanResults'
-import CommitsList from '@/components/CommitsList'
+import InteractiveCommitsList from '@/components/InteractiveCommitsList'
 import ExtensionsTab from '@/components/ExtensionsTab'
 
 type Tab = 'checklist' | 'github-scan' | 'extensions' | 'deployment' | 'scripts' | 'resources'
@@ -325,7 +325,7 @@ export default function BuildDetail({ build: initialBuild }: Props) {
             <CodeScanResults repo={build.repo} />
             <AgentReviewPanel repo={build.repo} userId={String(build.user_id)} />
 
-            <CommitsList commits={build.gh_data?.commits ?? []} />
+            <InteractiveCommitsList commits={build.gh_data?.commits ?? []} repo={build.repo} />
 
             {Object.keys(build.signals ?? {}).length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-4">
