@@ -66,3 +66,24 @@ async def get_pr_files(client: httpx.AsyncClient, token: Optional[str], owner: s
         headers=_headers(token),
     )
     return r.json() if r.is_success else []
+
+
+async def get_deployments(client: httpx.AsyncClient, token: Optional[str], owner: str, repo: str) -> list:
+    r = await client.get(
+        f"{BASE}/repos/{owner}/{repo}/deployments?environment=production&per_page=5",
+        headers=_headers(token),
+    )
+    return r.json() if r.is_success and isinstance(r.json(), list) else []
+
+
+async def get_deployment_url(client: httpx.AsyncClient, token: Optional[str], owner: str, repo: str, deployment_id: int) -> str:
+    r = await client.get(
+        f"{BASE}/repos/{owner}/{repo}/deployments/{deployment_id}/statuses?per_page=1",
+        headers=_headers(token),
+    )
+    if not r.is_success:
+        return ""
+    data = r.json()
+    if isinstance(data, list) and data:
+        return data[0].get("environment_url", "") or ""
+    return ""

@@ -130,16 +130,60 @@ export default function BuildDetail({ build: initialBuild }: Props) {
       setSyncState('done')
 
       const lastScan = new Date().toISOString()
-      const updated = { ...build, signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }
+      let updated = { ...build, signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }
+      const patchPayload: Record<string, unknown> = { signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan }
+
+      const depHints = applyDeployHints(data.signals, data.deploy_urls ?? {}, build.dep ?? EMPTY_DEP)
+      if (Object.keys(depHints).length > 0) {
+        const newDep = { ...(build.dep ?? EMPTY_DEP), ...depHints }
+        updated = { ...updated, dep: newDep }
+        patchPayload.dep = newDep
+      }
+
       setBuild(updated)
       saveBuild(updated).catch(() => {})
-      await patch({ signals: data.signals, auto_checks: data.auto_checks, gh_data: data.gh_data, last_scan: lastScan })
+      await patch(patchPayload)
 
       setTimeout(() => setSyncState('idle'), 4000)
     } catch {
       setSyncState('error')
       setSyncMsg('Sync failed — check that the API is running and your GitHub token has repo scope')
     }
+  }
+
+  // ── Deployment auto-detect ───────────────────────────────────────────────
+  function applyDeployHints(
+    signals: Record<string, boolean>,
+    deployUrls: Record<string, string>,
+    current: DeployConfig
+  ): Partial<DeployConfig> {
+    const p: Partial<DeployConfig> = {}
+
+    if (!current.fePlatform) {
+      if (signals.has_vercel) p.fePlatform = 'vercel'
+      else if (signals.has_deploy_config && !signals.has_railway) p.fePlatform = 'netlify'
+    }
+
+    if (!current.aioPlatform && !current.bePlatform) {
+      if (signals.has_railway && signals.has_vercel) p.bePlatform = 'railway-be'
+      else if (signals.has_railway) p.aioPlatform = 'railway'
+    }
+
+    if (!current.aioPlatform && signals.has_supabase && !signals.has_railway && !signals.has_vercel) {
+      p.aioPlatform = 'supabase'
+    }
+
+    const prodUrl = deployUrls['production'] ?? deployUrls['Production'] ?? ''
+    const stagingUrl = deployUrls['staging'] ?? deployUrls['preview'] ?? deployUrls['Preview'] ?? ''
+
+    if (prodUrl) {
+      const isApi = /api\.|\.railway\.app/.test(prodUrl)
+      if (isApi && !current.beUrl) p.beUrl = prodUrl
+      else if (!isApi && !current.feUrl) p.feUrl = prodUrl
+    }
+    if (stagingUrl && !current.feStagingUrl) p.feStagingUrl = stagingUrl
+
+    return p
   }
 
   // ── Checklist toggle ──────────────────────────────────────────────────────

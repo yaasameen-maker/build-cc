@@ -31,15 +31,30 @@ async def sync_repo(
         except Exception:
             raise HTTPException(status_code=404, detail="Repo not found or is private")
 
-        # 2. parallel: file tree + commits + PRs + issues
+        # 2. parallel: file tree + commits + PRs + issues + deployments
         tree_task = gh.get_file_tree(client, x_github_token, owner, repo, branch)
         commits_task = gh.get_commits(client, x_github_token, owner, repo)
         prs_task = gh.get_prs(client, x_github_token, owner, repo)
         issues_task = gh.get_issues(client, x_github_token, owner, repo)
+        deploy_task = gh.get_deployments(client, x_github_token, owner, repo)
 
-        file_tree, commits, prs, issues = await asyncio.gather(
-            tree_task, commits_task, prs_task, issues_task
+        file_tree, commits, prs, issues, raw_deployments = await asyncio.gather(
+            tree_task, commits_task, prs_task, issues_task, deploy_task
         )
+
+        # Resolve environment URLs (up to 3 deployments, all environments)
+        deploy_urls: dict[str, str] = {}
+        seen_envs: set[str] = set()
+        for d in raw_deployments[:10]:
+            env = d.get("environment", "")
+            if not env or env in seen_envs:
+                continue
+            seen_envs.add(env)
+            url = await gh.get_deployment_url(client, x_github_token, owner, repo, d["id"])
+            if url:
+                deploy_urls[env] = url
+            if len(deploy_urls) >= 3:
+                break
 
         # 3. content reads
         pkg_content = ""
@@ -84,4 +99,5 @@ async def sync_repo(
             auto_checks=auto_checks,
             gh_data=GHData(commits=commits[:15], prs=prs[:5], issues=issues[:5]),
             file_count=len(file_tree),
+            deploy_urls=deploy_urls,
         )

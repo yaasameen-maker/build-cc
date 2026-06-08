@@ -85,6 +85,7 @@ export interface SyncResponse {
   auto_checks: AutoChecks
   gh_data: GHData
   file_count: number
+  deploy_urls?: Record<string, string>
 }
 
 export function getItemState(build: Build, secId: string, itemId: string): CheckState {

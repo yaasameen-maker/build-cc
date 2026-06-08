@@ -17,3 +17,4 @@ class SyncResponse(BaseModel):
     auto_checks: dict[str, bool]
     gh_data: GHData
     file_count: int
+    deploy_urls: dict[str, str] = {}
