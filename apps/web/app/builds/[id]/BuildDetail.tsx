@@ -322,6 +322,9 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               </button>
             </div>
 
+            <CodeScanResults repo={build.repo} />
+            <AgentReviewPanel repo={build.repo} userId={String(build.user_id)} />
+
             <CommitsList commits={build.gh_data?.commits ?? []} />
 
             {Object.keys(build.signals ?? {}).length > 0 && (
@@ -381,8 +384,6 @@ export default function BuildDetail({ build: initialBuild }: Props) {
               </div>
             )}
 
-            <CodeScanResults repo={build.repo} />
-            <AgentReviewPanel repo={build.repo} userId={String(build.user_id)} />
           </>
         )}
         {tab === 'github-scan' && !build.repo && (
