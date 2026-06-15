@@ -10,7 +10,7 @@ export default async function BuildsPage() {
 
   const [builds, accountRow] = await Promise.all([
     sql`SELECT * FROM builds WHERE user_id = ${session.user.id} ORDER BY updated_at DESC`,
-    sql`SELECT scope FROM accounts WHERE "userId" = ${session.user.id} AND provider = 'github' LIMIT 1`,
+    sql`SELECT scope FROM accounts WHERE "userId" = ${session.user.id} AND provider = 'github' ORDER BY id DESC LIMIT 1`,
   ])
 
   const rawScope: string = (accountRow[0]?.scope ?? '')
